@@ -1,0 +1,93 @@
+@import "tailwindcss";
+
+:root {
+  /* Light theme (default) — JS sets data-theme explicitly on mount based on
+     saved preference or prefers-color-scheme, but these are the values
+     shown for the brief moment before that runs. */
+  /* A faint violet tint instead of flat white — still reads as a light
+     background but isn't stark #fff. */
+  --bg: #f9f8fc;
+  /* A slightly deeper shade of the base --bg — used to give alternating
+     sections (Skills, etc.) their own identity without breaking the theme
+     or introducing a whole new palette. */
+  --bg-alt: #f1eef8;
+  --text: #18181b;
+  --text-muted: #6b7280;
+  --border: #e5e7eb;
+  --accent: #7c3aed;
+  /* Gradient used on primary CTAs (buttons only) — stays the same across
+     both themes since it's a fixed brand accent, not a theme-derived color. */
+  --accent-from: #6366f1;
+  --accent-to: #a855f7;
+  /* Frosted-glass surfaces (badges, pills, cards floating over the ambient
+     glow). A light, low-opacity white wash reads as "glass" in both themes
+     — a themed --bg tint at low opacity just looks like a faint box, since
+     it's too close to the page color behind it to register as its own
+     surface. The white wash plus a brighter border and blur is what sells
+     the effect regardless of theme. */
+  --glass-bg: rgba(255, 255, 255, 0.55);
+  --glass-border: rgba(255, 255, 255, 0.8);
+}
+
+:root[data-theme="dark"] {
+  /* A faint violet-black instead of flat near-black — same reasoning as
+     the light theme's tint, so dark mode isn't a totally flat void. */
+  --bg: #0c0a13;
+  --bg-alt: #100d1c;
+  --text: #f4f4f5;
+  --text-muted: #a1a1aa;
+  --border: #27272a;
+  --accent: #a78bfa;
+  --glass-bg: rgba(255, 255, 255, 0.08);
+  --glass-border: rgba(255, 255, 255, 0.18);
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* Themed scrollbar — our accent gradient instead of the browser default,
+   on both engines. Firefox reads `scrollbar-color`; Chrome/Safari/Edge
+   need the `::-webkit-scrollbar*` pseudo-elements instead. */
+* {
+  scrollbar-color: var(--accent) var(--bg-alt);
+}
+
+::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-alt);
+}
+
+::-webkit-scrollbar-thumb {
+  background-image: linear-gradient(180deg, var(--accent-from), var(--accent-to));
+  border-radius: 999px;
+  border: 2px solid var(--bg-alt);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-image: linear-gradient(180deg, var(--accent-to), var(--accent-from));
+}
+
+/* Blinking caret for the Intro section's typewriter effect. */
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+.typewriter-cursor {
+  animation: blink 1s step-end infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .typewriter-cursor {
+    animation: none;
+  }
+}
