@@ -1,5 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { CircleCheckBig, Mail, MapPin } from 'lucide-react'
+import { motion } from 'framer-motion'
+import { CircleCheckBig, Loader2, Mail, MapPin } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { useSubmitContactMessage } from '../api/contact'
@@ -10,7 +11,6 @@ const contactSchema = z.object({
   subject: z.string().optional(),
   message: z.string().min(1, 'Message is required'),
 })
-const CONTACT_EMAIL = import.meta.env.VITE_CONTACT_EMAIL
 const inputClasses =
   'mt-1 w-full rounded-lg border border-[var(--border)] bg-[var(--bg)] px-4 py-2.5 text-[var(--text)] outline-none transition-colors focus:border-[var(--accent)]'
 export function Contact({ availableFor, profile }) {
@@ -37,17 +37,18 @@ export function Contact({ availableFor, profile }) {
       // surfaced inline via submitContactMessage.isError below
     }
   }
-  const infoCards = [
-    {
+  const infoCards = []
+  if (profile?.email) {
+    infoCards.push({
       icon: Mail,
       label: 'Email',
       value: (
-        <a href={`mailto:${CONTACT_EMAIL}`} className="transition-colors hover:text-[var(--accent)]">
-          {CONTACT_EMAIL}
+        <a href={`mailto:${profile.email}`} className="transition-colors hover:text-[var(--accent)]">
+          {profile.email}
         </a>
       ),
-    },
-  ]
+    })
+  }
   if (profile?.location) {
     infoCards.push({
       icon: MapPin,
@@ -76,14 +77,37 @@ export function Contact({ availableFor, profile }) {
         className="pointer-events-none absolute top-1/2 left-1/2 -z-10 h-80 w-80 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[var(--accent-from)]/20 opacity-0 blur-[110px] transition-[left,top,opacity] duration-500 ease-out"
       />
 
-      <div className="relative z-10 mx-auto max-w-6xl text-center">
+      <motion.div
+        initial={{
+          opacity: 0,
+          y: 40,
+        }}
+        whileInView={{
+          opacity: 1,
+          y: 0,
+        }}
+        viewport={{
+          once: true,
+          amount: 0.2,
+        }}
+        transition={{
+          duration: 0.6,
+          ease: 'easeOut',
+        }}
+        className="relative z-10 mx-auto max-w-6xl text-center"
+      >
         <div className="flex items-center justify-center gap-3 text-sm tracking-widest text-[var(--text-muted)] uppercase">
           <span className="font-mono text-[var(--accent)]">05</span>
           <span className="h-px w-8 bg-gradient-to-r from-[var(--accent-from)] to-[var(--accent-to)]" />
           <span>Get in Touch</span>
         </div>
 
-        <h2 className="mt-2 text-4xl font-bold text-[var(--text)] sm:text-5xl">Get In Touch</h2>
+        <h2 className="mt-2 text-4xl font-bold text-[var(--text)] sm:text-5xl">
+          Get In{' '}
+          <span className="bg-gradient-to-r from-[var(--accent-from)] to-[var(--accent-to)] bg-clip-text text-transparent italic">
+            Touch
+          </span>
+        </h2>
         <p className="mt-2 text-[var(--text-muted)]">Let's work together on your next project</p>
 
         <div className="mt-10 grid grid-cols-1 gap-6 text-left lg:grid-cols-[1fr_1.5fr]">
@@ -91,7 +115,7 @@ export function Contact({ availableFor, profile }) {
             {infoCards.map((card, index) => (
               <div
                 key={card.label}
-                className="relative rounded-2xl border border-[var(--border)] bg-[var(--bg-alt)] p-6"
+                className="relative rounded-2xl border border-[var(--border)] bg-[var(--bg-alt)] p-6 transition-all duration-300 hover:border-[var(--accent)]/60 hover:shadow-[0_0_30px_-8px_var(--accent)]"
               >
                 <span className="absolute top-4 right-4 font-mono text-xs text-[var(--text-muted)]">
                   {String(index + 1).padStart(2, '0')}
@@ -146,7 +170,7 @@ export function Contact({ availableFor, profile }) {
                 className="inline-flex w-full scale-100 items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-[var(--accent-from)] to-[var(--accent-to)] px-6 py-3 text-sm font-medium text-white transition-all duration-150 ease-out active:scale-[0.98] disabled:opacity-60"
               >
                 {isSubmitting ? 'Sending…' : 'Send Message'}
-                <Mail size={16} />
+                {isSubmitting ? <Loader2 aria-hidden size={16} className="animate-spin" /> : <Mail size={16} />}
               </button>
 
               {submitContactMessage.isSuccess && (
@@ -158,7 +182,7 @@ export function Contact({ availableFor, profile }) {
             </form>
           </div>
         </div>
-      </div>
+      </motion.div>
     </section>
   )
 }

@@ -2,6 +2,9 @@ import { http, HttpResponse } from 'msw'
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
 export const mockProfile = {
   name: 'Kim Anderson Tiel',
+  first_name: 'Kim',
+  middle_name: 'Anderson',
+  last_name: 'Tiel',
   title: 'Full-Stack Developer',
   location: 'Remote',
   timezone: 'Asia/Manila',
@@ -12,6 +15,10 @@ export const mockProfile = {
   avatar_url: null,
   hero_tagline: 'Building reliable systems end to end.',
   bio: 'I love the whole journey — from spinning up an API to polishing the last pixel.',
+  email: 'kim@example.com',
+  linkedin_url: 'https://linkedin.com/in/kimtiel',
+  github_url: 'https://github.com/Kim-Tiel',
+  resume_url: 'https://example.com/resume.pdf',
 }
 export const mockSkills = [
   {

@@ -1,10 +1,36 @@
 import { useMemo, useState } from 'react'
+import { motion } from 'framer-motion'
 import { ArrowRight, ExternalLink, LayoutGrid } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useCursorSpotlight } from '../hooks/useCursorSpotlight'
 const ALL_FILTER = 'All'
 const INITIAL_VISIBLE_COUNT = 6
 const LOAD_MORE_COUNT = 3
+
+// Cards fade/lift in one after another (not all at once) each time the
+// filter changes — same treatment as the Skills category tabs.
+const GRID_VARIANTS = {
+  hidden: {},
+  show: {
+    transition: {
+      staggerChildren: 0.08,
+    },
+  },
+}
+const CARD_VARIANTS = {
+  hidden: {
+    opacity: 0,
+    y: 12,
+  },
+  show: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.35,
+      ease: 'easeOut',
+    },
+  },
+}
 const STATUS_LABELS = {
   live: 'Live',
   in_progress: 'In Progress',
@@ -53,14 +79,37 @@ export function Projects({ projects }) {
         className="pointer-events-none absolute top-1/2 left-1/2 -z-10 h-80 w-80 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[var(--accent-from)]/20 opacity-0 blur-[110px] transition-[left,top,opacity] duration-500 ease-out"
       />
 
-      <div className="relative z-10 mx-auto max-w-6xl text-center">
+      <motion.div
+        initial={{
+          opacity: 0,
+          y: 40,
+        }}
+        whileInView={{
+          opacity: 1,
+          y: 0,
+        }}
+        viewport={{
+          once: true,
+          amount: 0.2,
+        }}
+        transition={{
+          duration: 0.6,
+          ease: 'easeOut',
+        }}
+        className="relative z-10 mx-auto max-w-6xl text-center"
+      >
         <div className="flex items-center justify-center gap-3 text-sm tracking-widest text-[var(--text-muted)] uppercase">
           <span className="font-mono text-[var(--accent)]">03</span>
           <span className="h-px w-8 bg-gradient-to-r from-[var(--accent-from)] to-[var(--accent-to)]" />
           <span>Projects</span>
         </div>
 
-        <h2 className="mt-2 text-4xl font-bold text-[var(--text)] sm:text-5xl">My projects</h2>
+        <h2 className="mt-2 text-4xl font-bold text-[var(--text)] sm:text-5xl">
+          My{' '}
+          <span className="bg-gradient-to-r from-[var(--accent-from)] to-[var(--accent-to)] bg-clip-text text-transparent italic">
+            projects
+          </span>
+        </h2>
         <p className="mx-auto mt-2 max-w-xl text-[var(--text-muted)]">
           Selected projects demonstrating practical solutions and well-architected digital experiences.
         </p>
@@ -81,100 +130,115 @@ export function Projects({ projects }) {
           </div>
         )}
 
-        <div className="mt-10 grid grid-cols-1 gap-6 text-left sm:grid-cols-2 lg:grid-cols-3">
+        <motion.div
+          // Remounts (and re-plays the staggered entrance below) each time
+          // the filter changes, since `key` changes with `activeFilter`.
+          key={activeFilter}
+          variants={GRID_VARIANTS}
+          initial="hidden"
+          animate="show"
+          className="mt-10 grid grid-cols-1 gap-6 text-left sm:grid-cols-2 lg:grid-cols-3"
+        >
           {visibleProjects.map((project, index) => (
-            <div
-              key={project.id}
-              className="group relative flex flex-col overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--bg-alt)] transition-all duration-300 hover:-translate-y-1 hover:border-[var(--accent)]/40 hover:shadow-xl hover:shadow-[var(--accent)]/10"
-            >
-              {/* The whole card navigates to the project's detail page — laid
-                  underneath everything else so the site/repo links (real
-                  <a> tags below) can still be clicked independently without
-                  nesting an anchor inside an anchor. */}
-              <Link to={`/projects/${project.slug}`} aria-label={project.title} className="absolute inset-0 z-0" />
+            <motion.div key={project.id} variants={CARD_VARIANTS} className="group relative">
+              {/* Sits behind the card, offset down-right — revealed on
+                  hover, matching the same offset-outline treatment used
+                  on the About section's photo card. */}
+              <span
+                aria-hidden
+                className="pointer-events-none absolute -right-2 -bottom-2 h-full w-full rounded-2xl border border-[var(--accent)]/40 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+              />
 
-              {/* Preview image, with a placeholder for projects that don't
+              <div className="relative flex h-full flex-col overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--bg-alt)] transition-all duration-300 group-hover:-translate-y-1 group-hover:border-[var(--accent)]">
+                {/* The whole card navigates to the project's detail page —
+                    laid underneath everything else so the site/repo links
+                    (real <a> tags below) can still be clicked independently
+                    without nesting an anchor inside an anchor. */}
+                <Link to={`/projects/${project.slug}`} aria-label={project.title} className="absolute inset-0 z-0" />
+
+                {/* Preview image, with a placeholder for projects that don't
                   have one yet — the tech stack only reveals over it on
                   hover, matching the reference's reveal-on-hover treatment
                   instead of always crowding the card. */}
-              <div className="relative aspect-[16/10] overflow-hidden bg-[var(--border)]">
-                {project.image_url ? (
-                  <img
-                    src={project.image_url}
-                    alt=""
-                    loading="lazy"
-                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
-                ) : (
-                  <div className="flex h-full w-full items-center justify-center text-[var(--text-muted)]">
-                    <LayoutGrid aria-hidden size={28} />
-                  </div>
-                )}
+                <div className="relative aspect-[16/10] overflow-hidden bg-[var(--border)]">
+                  {project.image_url ? (
+                    <img
+                      src={project.image_url}
+                      alt=""
+                      loading="lazy"
+                      className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center text-[var(--text-muted)]">
+                      <LayoutGrid aria-hidden size={28} />
+                    </div>
+                  )}
 
-                {project.skills.length > 0 && (
-                  <div className="absolute inset-x-0 bottom-0 flex flex-wrap gap-1.5 bg-gradient-to-t from-black/85 to-transparent p-3 pt-8 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-                    {project.skills.slice(0, 4).map((skill) => (
-                      <span
-                        key={skill.id}
-                        className="rounded-md border border-white/20 bg-black/40 px-2 py-0.5 font-mono text-[10px] text-white uppercase"
-                      >
-                        {skill.name}
-                      </span>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              <div className="relative flex flex-1 flex-col p-6">
-                <span
-                  aria-hidden
-                  className="pointer-events-none absolute top-2 right-4 font-mono text-7xl font-bold text-[var(--border)] select-none"
-                >
-                  {String(index + 1).padStart(2, '0')}
-                </span>
-
-                <div className="relative flex items-center gap-3 text-xs tracking-widest text-[var(--text-muted)] uppercase">
-                  <span className="h-px w-6 bg-[var(--border)] transition-colors duration-300 group-hover:bg-gradient-to-r group-hover:from-[var(--accent-from)] group-hover:to-[var(--accent-to)]" />
-                  <span>Case · {STATUS_LABELS[project.status]}</span>
+                  {project.skills.length > 0 && (
+                    <div className="absolute inset-x-0 bottom-0 flex translate-y-2 flex-wrap gap-1.5 bg-gradient-to-t from-black/85 to-transparent p-3 pt-8 opacity-0 transition-[opacity,transform] duration-300 ease-out group-hover:translate-y-0 group-hover:opacity-100">
+                      {project.skills.slice(0, 4).map((skill) => (
+                        <span
+                          key={skill.id}
+                          className="rounded-md border border-white/20 bg-black/40 px-2 py-0.5 font-mono text-[10px] text-white uppercase"
+                        >
+                          {skill.name}
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </div>
-                <h3 className="relative mt-2 text-lg font-semibold text-[var(--text)] transition-colors group-hover:text-[var(--accent)]">
-                  {project.title}
-                </h3>
-                <p className="relative mt-2 flex-1 text-sm text-[var(--text-muted)]">{project.summary}</p>
 
-                <div className="relative mt-4 flex items-center justify-between border-t border-[var(--border)] pt-4 text-xs tracking-widest text-[var(--text-muted)] uppercase">
-                  <span className="flex items-center gap-1">
-                    View Case <ArrowRight aria-hidden size={14} />
+                <div className="relative flex flex-1 flex-col p-6">
+                  <span
+                    aria-hidden
+                    className="pointer-events-none absolute top-2 right-4 font-mono text-7xl font-bold text-[var(--border)] select-none"
+                  >
+                    {String(index + 1).padStart(2, '0')}
                   </span>
-                  <span className="z-10 flex items-center gap-3">
-                    {project.site_url && (
-                      <a
-                        href={project.site_url}
-                        target="_blank"
-                        rel="noreferrer"
-                        aria-label={`Visit ${project.title}`}
-                        className="transition-colors hover:text-[var(--accent)]"
-                      >
-                        <ExternalLink aria-hidden size={14} />
-                      </a>
-                    )}
-                    {project.repo_url && (
-                      <a
-                        href={project.repo_url}
-                        target="_blank"
-                        rel="noreferrer"
-                        aria-label={`${project.title} source code`}
-                        className="transition-colors hover:text-[var(--accent)]"
-                      >
-                        <GithubIcon />
-                      </a>
-                    )}
-                  </span>
+
+                  <div className="relative flex items-center gap-3 text-xs tracking-widest text-[var(--text-muted)] uppercase">
+                    <span className="h-px w-6 bg-[var(--border)] transition-colors duration-300 group-hover:bg-gradient-to-r group-hover:from-[var(--accent-from)] group-hover:to-[var(--accent-to)]" />
+                    <span>Case · {STATUS_LABELS[project.status]}</span>
+                  </div>
+                  <h3 className="relative mt-2 text-lg font-semibold text-[var(--text)] transition-colors group-hover:text-[var(--accent)]">
+                    {project.title}
+                  </h3>
+                  <p className="relative mt-2 flex-1 text-sm text-[var(--text-muted)]">{project.summary}</p>
+
+                  <div className="relative mt-4 flex items-center justify-between border-t border-[var(--border)] pt-4 text-xs tracking-widest text-[var(--text-muted)] uppercase">
+                    <span className="flex items-center gap-1">
+                      View Case <ArrowRight aria-hidden size={14} />
+                    </span>
+                    <span className="z-10 flex items-center gap-3">
+                      {project.site_url && (
+                        <a
+                          href={project.site_url}
+                          target="_blank"
+                          rel="noreferrer"
+                          aria-label={`Visit ${project.title}`}
+                          className="transition-colors hover:text-[var(--accent)]"
+                        >
+                          <ExternalLink aria-hidden size={14} />
+                        </a>
+                      )}
+                      {project.repo_url && (
+                        <a
+                          href={project.repo_url}
+                          target="_blank"
+                          rel="noreferrer"
+                          aria-label={`${project.title} source code`}
+                          className="transition-colors hover:text-[var(--accent)]"
+                        >
+                          <GithubIcon />
+                        </a>
+                      )}
+                    </span>
+                  </div>
                 </div>
               </div>
-            </div>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
 
         {filteredProjects.length === 0 && (
           <p className="mt-10 text-[var(--text-muted)]">
@@ -194,7 +258,7 @@ export function Projects({ projects }) {
             </span>
           </button>
         )}
-      </div>
+      </motion.div>
     </section>
   )
 }

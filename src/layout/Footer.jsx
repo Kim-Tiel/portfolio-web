@@ -1,11 +1,7 @@
+import { motion } from 'framer-motion'
 import { ChevronUp, FileText, Mail, MapPin } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useScrolled } from './useScrolled'
-const CONTACT_EMAIL = import.meta.env.VITE_CONTACT_EMAIL
-
-// TODO: swap these placeholders for the real profile URLs (matches Intro.tsx).
-const GITHUB_URL = '#'
-const LINKEDIN_URL = '#'
 const QUICK_LINKS = [
   {
     id: 'home',
@@ -65,7 +61,25 @@ export function Footer({ profile, projects, skills }) {
   return (
     <>
       <footer className="border-t border-[var(--border)] bg-[var(--bg-alt)] px-4 py-16">
-        <div className="mx-auto max-w-6xl">
+        <motion.div
+          initial={{
+            opacity: 0,
+            y: 40,
+          }}
+          whileInView={{
+            opacity: 1,
+            y: 0,
+          }}
+          viewport={{
+            once: true,
+            amount: 0.2,
+          }}
+          transition={{
+            duration: 0.6,
+            ease: 'easeOut',
+          }}
+          className="mx-auto max-w-6xl"
+        >
           <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-4">
             {/* Brand */}
             <div>
@@ -76,13 +90,15 @@ export function Footer({ profile, projects, skills }) {
               )}
 
               <div className="mt-5 space-y-2 text-sm">
-                <a
-                  href={`mailto:${CONTACT_EMAIL}`}
-                  className="flex items-center gap-2 text-[var(--text-muted)] transition-colors hover:text-[var(--accent)]"
-                >
-                  <Mail size={16} aria-hidden />
-                  {CONTACT_EMAIL}
-                </a>
+                {profile?.email && (
+                  <a
+                    href={`mailto:${profile.email}`}
+                    className="flex items-center gap-2 text-[var(--text-muted)] transition-colors hover:text-[var(--accent)]"
+                  >
+                    <Mail size={16} aria-hidden />
+                    {profile.email}
+                  </a>
+                )}
                 {profile?.location && (
                   <p className="flex items-center gap-2 text-[var(--text-muted)]">
                     <MapPin size={16} aria-hidden />
@@ -168,39 +184,47 @@ export function Footer({ profile, projects, skills }) {
                 <span className="text-[var(--text-muted)]">Connect</span>
               </div>
               <div className="mt-5 flex items-center gap-3">
-                <a
-                  href={GITHUB_URL}
-                  target="_blank"
-                  rel="noreferrer"
-                  aria-label="GitHub"
-                  className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[var(--border)] text-[var(--text-muted)] transition-colors hover:border-[var(--accent)] hover:text-[var(--text)]"
-                >
-                  <GithubIcon />
-                </a>
-                <a
-                  href={LINKEDIN_URL}
-                  target="_blank"
-                  rel="noreferrer"
-                  aria-label="LinkedIn"
-                  className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[var(--border)] text-[var(--text-muted)] transition-colors hover:border-[var(--accent)] hover:text-[var(--text)]"
-                >
-                  <LinkedinIcon />
-                </a>
-                <a
-                  href={`mailto:${CONTACT_EMAIL}`}
-                  aria-label="Email"
-                  className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[var(--border)] text-[var(--text-muted)] transition-colors hover:border-[var(--accent)] hover:text-[var(--text)]"
-                >
-                  <Mail size={16} />
-                </a>
-                <a
-                  href="/resume.pdf"
-                  download
-                  aria-label="Resume"
-                  className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[var(--border)] text-[var(--text-muted)] transition-colors hover:border-[var(--accent)] hover:text-[var(--text)]"
-                >
-                  <FileText size={16} />
-                </a>
+                {profile?.github_url && (
+                  <a
+                    href={profile.github_url}
+                    target="_blank"
+                    rel="noreferrer"
+                    aria-label="GitHub"
+                    className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[var(--border)] text-[var(--text-muted)] transition-colors hover:border-[var(--accent)] hover:text-[var(--text)]"
+                  >
+                    <GithubIcon />
+                  </a>
+                )}
+                {profile?.linkedin_url && (
+                  <a
+                    href={profile.linkedin_url}
+                    target="_blank"
+                    rel="noreferrer"
+                    aria-label="LinkedIn"
+                    className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[var(--border)] text-[var(--text-muted)] transition-colors hover:border-[var(--accent)] hover:text-[var(--text)]"
+                  >
+                    <LinkedinIcon />
+                  </a>
+                )}
+                {profile?.email && (
+                  <a
+                    href={`mailto:${profile.email}`}
+                    aria-label="Email"
+                    className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[var(--border)] text-[var(--text-muted)] transition-colors hover:border-[var(--accent)] hover:text-[var(--text)]"
+                  >
+                    <Mail size={16} />
+                  </a>
+                )}
+                {profile?.resume_url && (
+                  <a
+                    href={profile.resume_url}
+                    download
+                    aria-label="Resume"
+                    className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[var(--border)] text-[var(--text-muted)] transition-colors hover:border-[var(--accent)] hover:text-[var(--text)]"
+                  >
+                    <FileText size={16} />
+                  </a>
+                )}
               </div>
             </div>
           </div>
@@ -221,7 +245,7 @@ export function Footer({ profile, projects, skills }) {
               </p>
             )}
           </div>
-        </div>
+        </motion.div>
       </footer>
 
       <button

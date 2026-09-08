@@ -2,11 +2,6 @@ import { motion } from 'framer-motion'
 import { Download, LayoutGrid, Mail } from 'lucide-react'
 import { useTypewriter } from './useTypewriter'
 import { useCursorSpotlight } from '../hooks/useCursorSpotlight'
-const CONTACT_EMAIL = import.meta.env.VITE_CONTACT_EMAIL
-
-// TODO: swap these placeholders for the real profile URLs.
-const GITHUB_URL = '#'
-const LINKEDIN_URL = '#'
 
 // Cycled by the typewriter effect below the name — built from the real
 // skills in the backend rather than invented tech.
@@ -93,9 +88,12 @@ export function Intro({ profile }) {
           transition={{
             delay: 0.1,
           }}
-          className="mt-6 text-5xl font-bold text-[var(--text)] sm:text-7xl"
+          className="mt-6 text-5xl font-bold sm:text-7xl"
         >
-          {profile.name}
+          <span className="text-[var(--text)]">{profile.first_name} </span>
+          <span className="bg-gradient-to-r from-[var(--accent-from)] to-[var(--accent-to)] bg-clip-text text-transparent">
+            {profile.last_name}
+          </span>
         </motion.h1>
 
         <motion.p
@@ -137,14 +135,16 @@ export function Intro({ profile }) {
         )}
 
         <div className="mt-8 flex flex-wrap justify-center gap-4">
-          <a
-            href="/resume.pdf"
-            download
-            className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-[var(--accent-from)] to-[var(--accent-to)] px-6 py-3 text-sm font-medium text-white"
-          >
-            Resume
-            <Download size={16} />
-          </a>
+          {profile.resume_url && (
+            <a
+              href={profile.resume_url}
+              download
+              className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-[var(--accent-from)] to-[var(--accent-to)] px-6 py-3 text-sm font-medium text-white"
+            >
+              Resume
+              <Download size={16} />
+            </a>
+          )}
           <button
             type="button"
             onClick={() =>
@@ -163,31 +163,37 @@ export function Intro({ profile }) {
       <div className="relative z-10 flex flex-col items-center gap-4">
         <p className="text-xs uppercase tracking-widest text-[var(--text-muted)]">Find Me On</p>
         <div className="flex items-center gap-3">
-          <a
-            href={GITHUB_URL}
-            target="_blank"
-            rel="noreferrer"
-            aria-label="GitHub"
-            className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[var(--border)] text-[var(--text-muted)] transition-colors hover:border-[var(--accent)] hover:text-[var(--text)]"
-          >
-            <GithubIcon />
-          </a>
-          <a
-            href={LINKEDIN_URL}
-            target="_blank"
-            rel="noreferrer"
-            aria-label="LinkedIn"
-            className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[var(--border)] text-[var(--text-muted)] transition-colors hover:border-[var(--accent)] hover:text-[var(--text)]"
-          >
-            <LinkedinIcon />
-          </a>
-          <a
-            href={`mailto:${CONTACT_EMAIL}`}
-            aria-label="Email"
-            className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[var(--border)] text-[var(--text-muted)] transition-colors hover:border-[var(--accent)] hover:text-[var(--text)]"
-          >
-            <Mail size={18} />
-          </a>
+          {profile.github_url && (
+            <a
+              href={profile.github_url}
+              target="_blank"
+              rel="noreferrer"
+              aria-label="GitHub"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[var(--border)] text-[var(--text-muted)] transition-colors hover:border-[var(--accent)] hover:text-[var(--text)]"
+            >
+              <GithubIcon />
+            </a>
+          )}
+          {profile.linkedin_url && (
+            <a
+              href={profile.linkedin_url}
+              target="_blank"
+              rel="noreferrer"
+              aria-label="LinkedIn"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[var(--border)] text-[var(--text-muted)] transition-colors hover:border-[var(--accent)] hover:text-[var(--text)]"
+            >
+              <LinkedinIcon />
+            </a>
+          )}
+          {profile.email && (
+            <a
+              href={`mailto:${profile.email}`}
+              aria-label="Email"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[var(--border)] text-[var(--text-muted)] transition-colors hover:border-[var(--accent)] hover:text-[var(--text)]"
+            >
+              <Mail size={18} />
+            </a>
+          )}
         </div>
       </div>
     </section>
