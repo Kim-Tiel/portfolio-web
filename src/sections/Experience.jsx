@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { useCursorSpotlight } from '../hooks/useCursorSpotlight'
-const CONTACT_EMAIL = import.meta.env.VITE_CONTACT_EMAIL
 function formatMonthYear(dateString) {
   return new Date(dateString).toLocaleDateString('en-US', {
     month: 'short',
@@ -147,7 +146,8 @@ export function Experience({ experiences, profile }) {
                   </p>
                   {profile && (
                     <p className="mt-1">
-                      Author: {profile.name} &lt;{CONTACT_EMAIL}&gt;
+                      Author: {profile.name}
+                      {profile.email && <> &lt;{profile.email}&gt;</>}
                     </p>
                   )}
                   <p className="mt-1">Date: {formatDateRange(selected.start_date, selected.end_date)}</p>

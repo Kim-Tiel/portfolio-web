@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from 'react'
 import { ArrowRight } from 'lucide-react'
 import { useCursorSpotlight } from '../hooks/useCursorSpotlight'
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
-const CONTACT_EMAIL = import.meta.env.VITE_CONTACT_EMAIL
 // Escape first, then wrap tokens in a themed span — the JSON text itself
 // (profile/skills/projects data, or the static hire-inquiry payload) is
 // ours, but escaping keeps this safe regardless.
@@ -78,7 +77,7 @@ export function LiveDemo({ profile, skills, projects }) {
       path: '/api/v1/contact_messages',
       buildResponse: () => ({
         status: 'accepting_inquiries',
-        next_step: `mailto:${CONTACT_EMAIL}`,
+        next_step: `mailto:${profile?.email}`,
         response_time_hours: 24,
         ok: true,
       }),
