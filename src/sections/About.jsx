@@ -1,3 +1,4 @@
+import { motion } from 'framer-motion'
 import { useCursorSpotlight } from '../hooks/useCursorSpotlight'
 function getInitials(name) {
   const parts = name.trim().split(/\s+/)
@@ -8,9 +9,25 @@ function getInitials(name) {
 export function About({ profile, education }) {
   const { spotlightRef, handleMouseMove } = useCursorSpotlight()
   return (
-    <section
+    <motion.section
       id="about"
       onMouseMove={handleMouseMove}
+      initial={{
+        opacity: 0,
+        y: 40,
+      }}
+      whileInView={{
+        opacity: 1,
+        y: 0,
+      }}
+      viewport={{
+        once: true,
+        amount: 0.2,
+      }}
+      transition={{
+        duration: 0.6,
+        ease: 'easeOut',
+      }}
       className="relative flex min-h-[calc(100vh-90px)] flex-col justify-center overflow-hidden px-4 py-24"
     >
       {/* Flat background — no static ambient blobs here (unlike the hero),
@@ -140,6 +157,6 @@ export function About({ profile, education }) {
           )}
         </div>
       </div>
-    </section>
+    </motion.section>
   )
 }

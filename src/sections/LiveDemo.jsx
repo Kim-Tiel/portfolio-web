@@ -134,7 +134,25 @@ export function LiveDemo({ profile, skills, projects }) {
         className="pointer-events-none absolute top-1/2 left-1/2 -z-10 h-80 w-80 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[var(--accent-from)]/20 opacity-0 blur-[110px] transition-[left,top,opacity] duration-500 ease-out"
       />
 
-      <div className="relative z-10 mx-auto max-w-6xl text-center">
+      <motion.div
+        initial={{
+          opacity: 0,
+          y: 40,
+        }}
+        whileInView={{
+          opacity: 1,
+          y: 0,
+        }}
+        viewport={{
+          once: true,
+          amount: 0.2,
+        }}
+        transition={{
+          duration: 0.6,
+          ease: 'easeOut',
+        }}
+        className="relative z-10 mx-auto max-w-6xl text-center"
+      >
         <div className="flex items-center justify-center gap-3 text-sm tracking-widest text-[var(--text-muted)] uppercase">
           <span className="font-mono text-[var(--accent)]">4.5</span>
           <span className="h-px w-8 bg-gradient-to-r from-[var(--accent-from)] to-[var(--accent-to)]" />
@@ -249,7 +267,7 @@ export function LiveDemo({ profile, skills, projects }) {
             </div>
           </div>
         </div>
-      </div>
+      </motion.div>
     </section>
   )
 }
