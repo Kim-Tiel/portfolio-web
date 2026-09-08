@@ -94,7 +94,11 @@ cp .env.development .env.local   # then edit values as needed
 | Variable | Description |
 |---|---|
 | `VITE_API_BASE_URL` | Base URL of the backend API (e.g. `http://localhost:3000` in development) |
-| `VITE_CONTACT_EMAIL` | Email address shown in the Contact section and used for `mailto:` links |
+
+Contact email, LinkedIn, GitHub, and resume links are no longer build-time
+env vars — they come from the backend Profile record (`email`, `linkedin_url`,
+`github_url`, `resume_url`) and can be changed from the admin panel without a
+rebuild.
 
 ### Running locally
 

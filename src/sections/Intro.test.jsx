@@ -3,9 +3,10 @@ import { describe, expect, it, vi } from 'vitest'
 import { Intro } from './Intro'
 import { mockProfile } from '../test/mocks/handlers'
 describe('Intro', () => {
-  it('renders the profile name, tagline, and availability', () => {
+  it('renders the profile first/last name, tagline, and availability', () => {
     render(<Intro profile={mockProfile} />)
-    expect(screen.getByText(mockProfile.name)).toBeInTheDocument()
+    expect(screen.getByText(mockProfile.first_name)).toBeInTheDocument()
+    expect(screen.getByText(mockProfile.last_name)).toBeInTheDocument()
     expect(screen.getByText(mockProfile.hero_tagline)).toBeInTheDocument()
     expect(screen.getByText(/available for full-time & contract/i)).toBeInTheDocument()
   })
@@ -58,6 +59,28 @@ describe('Intro', () => {
         name: 'Email',
       }),
     ).toHaveAttribute('href', expect.stringContaining('mailto:'))
+  })
+  it('hides the resume button when there is no resume', () => {
+    render(<Intro profile={{ ...mockProfile, resume_url: null }} />)
+    expect(screen.queryByText('Resume')).not.toBeInTheDocument()
+  })
+  it('hides GitHub, LinkedIn, and email links that are not set on the profile', () => {
+    render(<Intro profile={{ ...mockProfile, github_url: null, linkedin_url: null, email: null }} />)
+    expect(
+      screen.queryByRole('link', {
+        name: 'GitHub',
+      }),
+    ).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole('link', {
+        name: 'LinkedIn',
+      }),
+    ).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole('link', {
+        name: 'Email',
+      }),
+    ).not.toBeInTheDocument()
   })
   it('eases the cursor spotlight toward the pointer on mouse move and reveals it', () => {
     render(<Intro profile={mockProfile} />)

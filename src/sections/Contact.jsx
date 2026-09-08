@@ -10,7 +10,6 @@ const contactSchema = z.object({
   subject: z.string().optional(),
   message: z.string().min(1, 'Message is required'),
 })
-const CONTACT_EMAIL = import.meta.env.VITE_CONTACT_EMAIL
 const inputClasses =
   'mt-1 w-full rounded-lg border border-[var(--border)] bg-[var(--bg)] px-4 py-2.5 text-[var(--text)] outline-none transition-colors focus:border-[var(--accent)]'
 export function Contact({ availableFor, profile }) {
@@ -37,17 +36,18 @@ export function Contact({ availableFor, profile }) {
       // surfaced inline via submitContactMessage.isError below
     }
   }
-  const infoCards = [
-    {
+  const infoCards = []
+  if (profile?.email) {
+    infoCards.push({
       icon: Mail,
       label: 'Email',
       value: (
-        <a href={`mailto:${CONTACT_EMAIL}`} className="transition-colors hover:text-[var(--accent)]">
-          {CONTACT_EMAIL}
+        <a href={`mailto:${profile.email}`} className="transition-colors hover:text-[var(--accent)]">
+          {profile.email}
         </a>
       ),
-    },
-  ]
+    })
+  }
   if (profile?.location) {
     infoCards.push({
       icon: MapPin,
