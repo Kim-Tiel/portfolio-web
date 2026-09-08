@@ -90,8 +90,8 @@ export function Intro({ profile }) {
           }}
           className="mt-6 text-5xl font-bold sm:text-7xl"
         >
-          <span className="block text-[var(--text)]">{profile.first_name}</span>
-          <span className="block bg-gradient-to-r from-[var(--accent-from)] to-[var(--accent-to)] bg-clip-text text-transparent">
+          <span className="text-[var(--text)]">{profile.first_name} </span>
+          <span className="bg-gradient-to-r from-[var(--accent-from)] to-[var(--accent-to)] bg-clip-text text-transparent">
             {profile.last_name}
           </span>
         </motion.h1>
