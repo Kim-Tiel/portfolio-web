@@ -1,3 +1,4 @@
+import { motion } from 'framer-motion'
 import { useCursorSpotlight } from '../hooks/useCursorSpotlight'
 function getInitials(name) {
   const parts = name.trim().split(/\s+/)
@@ -8,9 +9,25 @@ function getInitials(name) {
 export function About({ profile, education }) {
   const { spotlightRef, handleMouseMove } = useCursorSpotlight()
   return (
-    <section
+    <motion.section
       id="about"
       onMouseMove={handleMouseMove}
+      initial={{
+        opacity: 0,
+        y: 40,
+      }}
+      whileInView={{
+        opacity: 1,
+        y: 0,
+      }}
+      viewport={{
+        once: true,
+        amount: 0.2,
+      }}
+      transition={{
+        duration: 0.6,
+        ease: 'easeOut',
+      }}
       className="relative flex min-h-[calc(100vh-90px)] flex-col justify-center overflow-hidden px-4 py-24"
     >
       {/* Flat background — no static ambient blobs here (unlike the hero),
@@ -38,19 +55,19 @@ export function About({ profile, education }) {
             className="absolute -right-3 -bottom-3 h-full w-full rounded-2xl border border-[var(--accent)]/40"
           />
 
-          <div className="relative overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--border)]">
+          <div className="group relative overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--border)]">
             {profile.avatar_url ? (
               <img
                 src={profile.avatar_url}
                 alt={profile.name}
                 loading="lazy"
-                className="aspect-[4/5] w-full object-cover"
+                className="aspect-[4/5] w-full scale-100 object-cover transition-transform duration-500 ease-out group-hover:scale-110 motion-reduce:transition-none motion-reduce:group-hover:scale-100"
               />
             ) : (
               <div
                 aria-hidden
                 data-testid="avatar-initials"
-                className="flex aspect-[4/5] w-full items-center justify-center text-4xl font-bold text-[var(--text-muted)]"
+                className="flex aspect-[4/5] w-full scale-100 items-center justify-center text-4xl font-bold text-[var(--text-muted)] transition-transform duration-500 ease-out group-hover:scale-110 motion-reduce:transition-none motion-reduce:group-hover:scale-100"
               >
                 {getInitials(profile.name)}
               </div>
@@ -78,14 +95,17 @@ export function About({ profile, education }) {
 
         <div>
           <h2 className="text-4xl font-bold text-[var(--text)] sm:text-5xl">
-            About <span className="text-[var(--accent)]">Me</span>
+            About{' '}
+            <span className="bg-gradient-to-r from-[var(--accent-from)] to-[var(--accent-to)] bg-clip-text text-transparent italic">
+              Me
+            </span>
           </h2>
 
           <p className="mt-2 text-xl font-semibold text-[var(--text)]">{profile.title}</p>
 
           <div className="mt-8 grid grid-cols-1 divide-y divide-[var(--glass-border)] rounded-2xl border border-[var(--glass-border)] bg-[var(--glass-bg)] shadow-lg shadow-black/10 [backdrop-filter:blur(24px)_saturate(180%)] sm:grid-cols-3 sm:divide-x sm:divide-y-0">
             {profile.years_career_experience !== null && (
-              <div className="p-5">
+              <div className="p-5 transition-transform duration-300 ease-out hover:-translate-y-1 motion-reduce:transition-none motion-reduce:hover:translate-y-0">
                 <p className="text-xs tracking-widest text-[var(--text-muted)] uppercase">01 · Experience</p>
                 <p className="mt-1 font-semibold text-[var(--text)]">
                   {profile.years_career_experience}+ Years Experience
@@ -93,7 +113,7 @@ export function About({ profile, education }) {
               </div>
             )}
             {profile.available_for.length > 0 && (
-              <div className="p-5">
+              <div className="p-5 transition-transform duration-300 ease-out hover:-translate-y-1 motion-reduce:transition-none motion-reduce:hover:translate-y-0">
                 <p className="text-xs tracking-widest text-[var(--text-muted)] uppercase">02 · Status</p>
                 <p className="mt-1 font-semibold text-[var(--text)]">
                   Available for {profile.available_for.join(' & ')}
@@ -101,7 +121,7 @@ export function About({ profile, education }) {
               </div>
             )}
             {profile.location && (
-              <div className="p-5">
+              <div className="p-5 transition-transform duration-300 ease-out hover:-translate-y-1 motion-reduce:transition-none motion-reduce:hover:translate-y-0">
                 <p className="text-xs tracking-widest text-[var(--text-muted)] uppercase">03 · Based In</p>
                 <p className="mt-1 font-semibold text-[var(--text)]">{profile.location}</p>
               </div>
@@ -137,6 +157,6 @@ export function About({ profile, education }) {
           )}
         </div>
       </div>
-    </section>
+    </motion.section>
   )
 }
