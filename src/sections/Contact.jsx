@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { CircleCheckBig, Mail, MapPin } from 'lucide-react'
+import { CircleCheckBig, Loader2, Mail, MapPin } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { useSubmitContactMessage } from '../api/contact'
@@ -83,7 +83,12 @@ export function Contact({ availableFor, profile }) {
           <span>Get in Touch</span>
         </div>
 
-        <h2 className="mt-2 text-4xl font-bold text-[var(--text)] sm:text-5xl">Get In Touch</h2>
+        <h2 className="mt-2 text-4xl font-bold text-[var(--text)] sm:text-5xl">
+          Get In{' '}
+          <span className="bg-gradient-to-r from-[var(--accent-from)] to-[var(--accent-to)] bg-clip-text text-transparent italic">
+            Touch
+          </span>
+        </h2>
         <p className="mt-2 text-[var(--text-muted)]">Let's work together on your next project</p>
 
         <div className="mt-10 grid grid-cols-1 gap-6 text-left lg:grid-cols-[1fr_1.5fr]">
@@ -91,7 +96,7 @@ export function Contact({ availableFor, profile }) {
             {infoCards.map((card, index) => (
               <div
                 key={card.label}
-                className="relative rounded-2xl border border-[var(--border)] bg-[var(--bg-alt)] p-6"
+                className="relative rounded-2xl border border-[var(--border)] bg-[var(--bg-alt)] p-6 transition-all duration-300 hover:border-[var(--accent)]/60 hover:shadow-[0_0_30px_-8px_var(--accent)]"
               >
                 <span className="absolute top-4 right-4 font-mono text-xs text-[var(--text-muted)]">
                   {String(index + 1).padStart(2, '0')}
@@ -146,7 +151,7 @@ export function Contact({ availableFor, profile }) {
                 className="inline-flex w-full scale-100 items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-[var(--accent-from)] to-[var(--accent-to)] px-6 py-3 text-sm font-medium text-white transition-all duration-150 ease-out active:scale-[0.98] disabled:opacity-60"
               >
                 {isSubmitting ? 'Sending…' : 'Send Message'}
-                <Mail size={16} />
+                {isSubmitting ? <Loader2 aria-hidden size={16} className="animate-spin" /> : <Mail size={16} />}
               </button>
 
               {submitContactMessage.isSuccess && (

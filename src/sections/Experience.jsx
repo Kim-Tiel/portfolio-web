@@ -39,6 +39,32 @@ function fullHash(experience) {
 function logFileName(company) {
   return company.toLowerCase().replace(/[^a-z0-9]/g, '') || 'company'
 }
+
+// The detail panel's pieces (commit meta, role/company, each highlight
+// line, the stack tags) cascade in one after another rather than the
+// whole block fading in as one flat piece.
+const DETAIL_VARIANTS = {
+  hidden: {},
+  show: {
+    transition: {
+      staggerChildren: 0.06,
+    },
+  },
+}
+const DETAIL_ITEM_VARIANTS = {
+  hidden: {
+    opacity: 0,
+    y: 8,
+  },
+  show: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.25,
+      ease: 'easeOut',
+    },
+  },
+}
 export function Experience({ experiences, profile }) {
   const { spotlightRef, handleMouseMove } = useCursorSpotlight()
   const sorted = [...experiences].sort((a, b) => new Date(b.start_date).getTime() - new Date(a.start_date).getTime())
@@ -64,7 +90,12 @@ export function Experience({ experiences, profile }) {
           <span>Experience</span>
         </div>
 
-        <h2 className="mt-2 text-4xl font-bold text-[var(--text)] sm:text-5xl">Career commit history</h2>
+        <h2 className="mt-2 text-4xl font-bold text-[var(--text)] sm:text-5xl">
+          Career commit{' '}
+          <span className="bg-gradient-to-r from-[var(--accent-from)] to-[var(--accent-to)] bg-clip-text text-transparent italic">
+            history
+          </span>
+        </h2>
         <p className="mt-2 font-mono text-sm text-[var(--text-muted)]">git log --oneline --graph</p>
 
         {sorted.length === 0 && <p className="mt-10 text-[var(--text-muted)]">No experience listed yet.</p>}
@@ -127,21 +158,12 @@ export function Experience({ experiences, profile }) {
             {selected && (
               <motion.div
                 key={selected.id}
-                initial={{
-                  opacity: 0,
-                  y: 8,
-                }}
-                animate={{
-                  opacity: 1,
-                  y: 0,
-                }}
-                transition={{
-                  duration: 0.25,
-                  ease: 'easeOut',
-                }}
+                variants={DETAIL_VARIANTS}
+                initial="hidden"
+                animate="show"
                 className="p-6 sm:p-8"
               >
-                <div className="font-mono text-xs text-[var(--text-muted)]">
+                <motion.div variants={DETAIL_ITEM_VARIANTS} className="font-mono text-xs text-[var(--text-muted)]">
                   <p>
                     commit <span className="text-[var(--accent)]">{fullHash(selected)}</span>
                   </p>
@@ -151,33 +173,33 @@ export function Experience({ experiences, profile }) {
                     </p>
                   )}
                   <p className="mt-1">Date: {formatDateRange(selected.start_date, selected.end_date)}</p>
-                </div>
+                </motion.div>
 
-                <div className="mt-5 border-t border-[var(--border)] pt-5">
+                <motion.div variants={DETAIL_ITEM_VARIANTS} className="mt-5 border-t border-[var(--border)] pt-5">
                   <h3 className="text-xl font-bold text-[var(--text)]">{selected.role}</h3>
                   <p className="mt-1 text-[var(--text-muted)]">
                     {selected.company}
                     {selected.location ? ` · ${selected.location}` : ''}
                     {selected.is_remote ? ' · Remote' : ''}
                   </p>
-                </div>
+                </motion.div>
 
                 {selected.highlights.length > 0 && (
-                  <div className="mt-5 font-mono text-xs">
+                  <motion.div variants={DETAIL_ITEM_VARIANTS} className="mt-5 font-mono text-xs">
                     <p className="text-[var(--text-muted)]">--- /dev/null</p>
                     <p className="text-[var(--text-muted)]">+++ b/{logFileName(selected.company)}.log</p>
-                    <ul className="mt-2 space-y-1.5">
+                    <motion.ul variants={DETAIL_VARIANTS} className="mt-2 space-y-1.5">
                       {selected.highlights.map((highlight) => (
-                        <li key={highlight} className="text-[var(--text)]">
+                        <motion.li key={highlight} variants={DETAIL_ITEM_VARIANTS} className="text-[var(--text)]">
                           <span className="text-emerald-500">+</span> {highlight}
-                        </li>
+                        </motion.li>
                       ))}
-                    </ul>
-                  </div>
+                    </motion.ul>
+                  </motion.div>
                 )}
 
                 {selected.skills.length > 0 && (
-                  <div className="mt-6">
+                  <motion.div variants={DETAIL_ITEM_VARIANTS} className="mt-6">
                     <p className="font-mono text-xs tracking-widest text-[var(--text-muted)] uppercase">Stack</p>
                     <div className="mt-3 flex flex-wrap gap-2">
                       {selected.skills.map((skill) => (
@@ -189,7 +211,7 @@ export function Experience({ experiences, profile }) {
                         </span>
                       ))}
                     </div>
-                  </div>
+                  </motion.div>
                 )}
               </motion.div>
             )}

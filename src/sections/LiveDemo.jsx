@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { motion } from 'framer-motion'
 import { ArrowRight } from 'lucide-react'
 import { useCursorSpotlight } from '../hooks/useCursorSpotlight'
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
@@ -163,8 +164,9 @@ export function LiveDemo({ profile, skills, projects }) {
                     <button
                       type="button"
                       onClick={() => send(query)}
+                      disabled={sending}
                       aria-pressed={isSelected}
-                      className={`flex w-full items-center gap-2 rounded-lg border-l-2 px-2 py-2 text-left transition-colors ${isSelected ? 'border-[var(--accent)] bg-[var(--accent)]/10' : 'border-transparent hover:bg-[var(--bg-alt)]'}`}
+                      className={`flex w-full items-center gap-2 rounded-lg border-l-2 px-2 py-2 text-left transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${isSelected ? 'border-[var(--accent)] bg-[var(--accent)]/10' : 'border-transparent hover:bg-[var(--bg-alt)]'}`}
                     >
                       <span
                         className={`rounded px-1.5 py-0.5 font-mono text-[10px] font-semibold ${query.method === 'POST' ? 'bg-[var(--accent)] text-white' : 'bg-[var(--border)] text-[var(--text-muted)]'}`}
@@ -194,9 +196,10 @@ export function LiveDemo({ profile, skills, projects }) {
               <button
                 type="button"
                 onClick={() => send(selected)}
-                className="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-gradient-to-r from-[var(--accent-from)] to-[var(--accent-to)] px-4 py-2 font-mono text-sm font-medium text-white transition-transform active:scale-95"
+                disabled={sending}
+                className="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-gradient-to-r from-[var(--accent-from)] to-[var(--accent-to)] px-4 py-2 font-mono text-sm font-medium text-white transition-transform active:scale-95 disabled:cursor-not-allowed disabled:opacity-60 disabled:active:scale-100"
               >
-                send <ArrowRight aria-hidden size={14} />
+                {sending ? 'sending…' : 'send'} <ArrowRight aria-hidden size={14} />
               </button>
             </div>
 
@@ -218,7 +221,23 @@ export function LiveDemo({ profile, skills, projects }) {
 
             <div className="min-h-[220px] flex-1 overflow-x-auto p-4">
               {!sending && (
-                <pre
+                <motion.pre
+                  // Keyed on the query id so switching (or re-sending) a
+                  // query remounts this and replays the reveal, instead of
+                  // the new response just snapping into place.
+                  key={selected.id}
+                  initial={{
+                    opacity: 0,
+                    y: 8,
+                  }}
+                  animate={{
+                    opacity: 1,
+                    y: 0,
+                  }}
+                  transition={{
+                    duration: 0.3,
+                    ease: 'easeOut',
+                  }}
                   className="font-mono text-sm text-[var(--text)]"
                   // Content is escaped in highlightJson before any HTML is
                   // built — see the function above.
