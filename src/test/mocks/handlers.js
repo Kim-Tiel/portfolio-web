@@ -25,15 +25,15 @@ export const mockSkills = [
     id: '1',
     name: 'React',
     category: 'frontend',
-    proficiency: 'proficient',
-    icon_slug: 'react',
+    proficiency: 'advanced',
+    proficiency_percent: 75,
   },
   {
     id: '2',
     name: 'Ruby on Rails',
     category: 'backend',
     proficiency: 'expert',
-    icon_slug: 'rails',
+    proficiency_percent: 90,
   },
 ]
 export const mockProjects = [

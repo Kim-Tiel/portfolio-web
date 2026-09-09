@@ -9,6 +9,29 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
 function escapeHtml(value) {
   return value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
 }
+// The sample-query rows reveal one after another rather than all at once.
+const LIST_VARIANTS = {
+  hidden: {},
+  show: {
+    transition: {
+      staggerChildren: 0.08,
+    },
+  },
+}
+const LIST_ITEM_VARIANTS = {
+  hidden: {
+    opacity: 0,
+    y: 12,
+  },
+  show: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.35,
+      ease: 'easeOut',
+    },
+  },
+}
 function highlightJson(value) {
   const escaped = escapeHtml(JSON.stringify(value, null, 2))
   return escaped.replace(
@@ -173,11 +196,20 @@ export function LiveDemo({ profile, skills, projects }) {
           {/* Sample queries */}
           <div className="border-b border-[var(--border)] p-4 lg:border-r lg:border-b-0">
             <p className="px-2 text-xs tracking-widest text-[var(--text-muted)] uppercase">Sample Queries</p>
-            <ul className="mt-3 space-y-1">
+            <motion.ul
+              variants={LIST_VARIANTS}
+              initial="hidden"
+              whileInView="show"
+              viewport={{
+                once: true,
+                amount: 0.2,
+              }}
+              className="mt-3 space-y-1"
+            >
               {queries.map((query) => {
                 const isSelected = query.id === selected.id
                 return (
-                  <li key={query.id}>
+                  <motion.li key={query.id} variants={LIST_ITEM_VARIANTS}>
                     <button
                       type="button"
                       onClick={() => send(query)}
@@ -192,10 +224,10 @@ export function LiveDemo({ profile, skills, projects }) {
                       </span>
                       <span className="font-mono text-sm text-[var(--text)]">{query.label}</span>
                     </button>
-                  </li>
+                  </motion.li>
                 )
               })}
-            </ul>
+            </motion.ul>
           </div>
 
           {/* Request / response panel */}

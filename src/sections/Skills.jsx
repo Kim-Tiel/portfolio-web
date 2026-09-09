@@ -10,11 +10,13 @@ const CATEGORY_LABELS = {
   ai: 'A.I',
 }
 
-// TEMPORARY: flat 80% for every level until the backend exposes a real
-// numeric proficiency value to size this from. Revert to a per-level map
-// (or read a numeric field directly) once that reference lands.
-function getProficiencyWidth() {
-  return 80
+// Clamped defensively — `proficiency_percent` is a required, validated
+// (0-100) column on the backend, but a stale cached response or an
+// unexpected shape shouldn't be able to render a bar wider than the card.
+function getProficiencyWidth(skill) {
+  const value = Number(skill.proficiency_percent)
+  if (Number.isNaN(value)) return 0
+  return Math.min(100, Math.max(0, value))
 }
 
 // Higher proficiency reads as the brand gradient; lower levels shift toward
@@ -22,7 +24,6 @@ function getProficiencyWidth() {
 const PROFICIENCY_BAR_COLOR = {
   expert: 'from-[var(--accent-from)] to-[var(--accent-to)]',
   advanced: 'from-[var(--accent-from)] to-[var(--accent-to)]',
-  proficient: 'from-[var(--accent-from)] to-[var(--accent-to)]',
   intermediate: 'from-amber-500 to-orange-500',
   beginner: 'from-amber-500 to-orange-500',
 }
@@ -30,9 +31,8 @@ function getProficiencyBarColor(level) {
   return PROFICIENCY_BAR_COLOR[level.toLowerCase()] ?? 'from-[var(--accent-from)] to-[var(--accent-to)]'
 }
 
-// No icon assets/URLs from the backend yet (icon_slug is always null in
-// practice) — a short initials badge is a reasonable stand-in until there
-// are real per-skill icons to render.
+// Fallback for a skill with no uploaded icon (`icon_url` is null) — a
+// short initials badge instead of leaving the card looking broken.
 function getIconLabel(name) {
   const cleaned = name.replace(/[^a-zA-Z0-9]/g, '')
   return cleaned.slice(0, 2).toUpperCase() || '?'
@@ -169,9 +169,13 @@ export function Skills({ skills }) {
 
               <div
                 aria-hidden
-                className="flex h-16 w-16 flex-none items-center justify-center rounded-lg bg-[var(--border)] text-xs font-bold text-[var(--text)] transition-transform duration-300 ease-out hover:-rotate-6 hover:scale-110 motion-reduce:transition-none motion-reduce:hover:rotate-0 motion-reduce:hover:scale-100"
+                className="flex h-16 w-16 flex-none items-center justify-center rounded-lg bg-[var(--border)] p-3 text-xs font-bold text-[var(--text)] transition-transform duration-300 ease-out hover:-rotate-6 hover:scale-110 motion-reduce:transition-none motion-reduce:hover:rotate-0 motion-reduce:hover:scale-100"
               >
-                {getIconLabel(skill.name)}
+                {skill.icon_url ? (
+                  <img src={skill.icon_url} alt="" loading="lazy" className="h-full w-full object-contain" />
+                ) : (
+                  getIconLabel(skill.name)
+                )}
               </div>
 
               <div className="min-w-0 flex-1">
@@ -191,7 +195,7 @@ export function Skills({ skills }) {
                       width: '0%',
                     }}
                     animate={{
-                      width: `${getProficiencyWidth()}%`,
+                      width: `${getProficiencyWidth(skill)}%`,
                     }}
                     transition={{
                       duration: 0.8,

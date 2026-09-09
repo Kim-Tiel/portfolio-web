@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { motion } from 'framer-motion'
 import { Menu, X } from 'lucide-react'
 import { ThemeToggle } from '../theme/ThemeToggle'
 import { useActiveSection } from './useActiveSection'
@@ -25,6 +26,33 @@ const NAV_LINKS = [
     label: 'Experience',
   },
 ]
+const DOT_TRANSITION = {
+  type: 'spring',
+  stiffness: 380,
+  damping: 30,
+}
+
+// A fixed-size invisible spacer keeps every link the same width whether or
+// not it's active — the *visible* dot is a separate element stacked on top,
+// only ever mounted for the active link. Because it shares one `layoutId`
+// across every link, Framer Motion animates it sliding from its old
+// position to its new one when `activeId` changes, instead of one dot
+// fading out in place while a different one fades in elsewhere.
+function NavDot({ isActive, layoutId }) {
+  return (
+    <span aria-hidden className="relative h-1.5 w-1.5 shrink-0">
+      <span className="block h-1.5 w-1.5 rounded-full opacity-0" />
+      {isActive && (
+        <motion.span
+          layoutId={layoutId}
+          data-testid="nav-active-dot"
+          className="absolute inset-0 rounded-full bg-[var(--accent)]"
+          transition={DOT_TRANSITION}
+        />
+      )}
+    </span>
+  )
+}
 export function Nav() {
   const [mobileOpen, setMobileOpen] = useState(false)
   const activeId = useActiveSection(NAV_LINKS.map((link) => link.id))
@@ -64,12 +92,7 @@ export function Nav() {
                 aria-current={activeId === link.id ? 'true' : undefined}
                 className={`flex items-center gap-2 text-base transition-colors ${activeId === link.id ? 'text-[var(--text)]' : 'text-[var(--text-muted)] hover:text-[var(--text)]'}`}
               >
-                {/* Left in the DOM always and just faded — so the dot
-                    eases in/out between links instead of popping. */}
-                <span
-                  aria-hidden
-                  className={`h-1.5 w-1.5 rounded-full bg-[var(--accent)] transition-opacity duration-300 ${activeId === link.id ? 'opacity-100' : 'opacity-0'}`}
-                />
+                <NavDot isActive={activeId === link.id} layoutId="nav-active-dot-desktop" />
                 {link.label}
               </button>
             ))}
@@ -113,10 +136,7 @@ export function Nav() {
               aria-current={activeId === link.id ? 'true' : undefined}
               className={`flex items-center gap-2 rounded px-3 py-2 text-left text-base transition-colors ${activeId === link.id ? 'text-[var(--text)]' : 'text-[var(--text-muted)]'}`}
             >
-              <span
-                aria-hidden
-                className={`h-1.5 w-1.5 rounded-full bg-[var(--accent)] transition-opacity duration-300 ${activeId === link.id ? 'opacity-100' : 'opacity-0'}`}
-              />
+              <NavDot isActive={activeId === link.id} layoutId="nav-active-dot-mobile" />
               {link.label}
             </button>
           ))}

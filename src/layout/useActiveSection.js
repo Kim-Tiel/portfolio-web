@@ -1,66 +1,73 @@
 import { useEffect, useState } from 'react'
 
+// How far down the viewport the "active line" sits — a section becomes
+// active once its top has scrolled past this point.
+const ACTIVE_LINE_RATIO = 0.4
+
 /**
- * Tracks which of the given section ids is currently "active" — the one
- * crossing a thin horizontal band near vertical-center of the viewport —
- * so the nav can highlight the section the user is actually looking at
- * while scrolling.
+ * Tracks which of the given section ids is currently "active" — the last
+ * one (in document order) whose top has scrolled past a line near the top
+ * of the viewport — so the nav can highlight the section the user is
+ * actually looking at while scrolling.
+ *
+ * This recomputes from live element geometry on every scroll/resize rather
+ * than watching a thin intersection band: sections here vary a lot in
+ * height (a tall project grid next to a short experience panel), and a
+ * band can get "stuck" on a section that's taller than the band's travel
+ * range, or skip past a short one between two scroll events entirely.
+ * Comparing every section's current position always picks the right one
+ * regardless of how tall any of them are.
  */
 export function useActiveSection(sectionIds) {
   const [activeId, setActiveId] = useState(sectionIds[0] ?? '')
   useEffect(() => {
     if (sectionIds.length === 0) return
-    const intersectionObserver = new IntersectionObserver(
-      (entries) => {
-        const visible = entries.find((entry) => entry.isIntersecting)
-        if (visible) setActiveId(visible.target.id)
-      },
-      {
-        rootMargin: '-40% 0px -40% 0px',
-        threshold: 0,
-      },
-    )
+    let frame = null
+    function computeActiveId() {
+      const activeLine = window.innerHeight * ACTIVE_LINE_RATIO
+      let current = sectionIds[0] ?? ''
+      for (const id of sectionIds) {
+        const element = document.getElementById(id)
+        if (element && element.getBoundingClientRect().top <= activeLine) {
+          current = id
+        }
+      }
+      return current
+    }
+    function handleUpdate() {
+      frame = null
+      setActiveId(computeActiveId())
+    }
+    function scheduleUpdate() {
+      if (frame !== null) return
+      frame = requestAnimationFrame(handleUpdate)
+    }
+    scheduleUpdate()
+    window.addEventListener('scroll', scheduleUpdate, {
+      passive: true,
+    })
+    window.addEventListener('resize', scheduleUpdate)
 
     // Some sections (e.g. ones gated behind an async load, like the profile
     // query) don't exist in the DOM yet the moment the nav mounts — Nav
-    // itself renders immediately, before that data arrives. Observing only
-    // what's present *right now* would permanently miss those, since this
-    // effect has nothing in its dependencies that changes when they finally
-    // mount. So: observe whatever ids already exist, then watch the DOM for
-    // the rest to show up and start observing them too, only stopping that
-    // watch once every id has been found.
-    const observedIds = new Set()
-    function observeAvailableSections() {
-      for (const id of sectionIds) {
-        if (observedIds.has(id)) continue
-        const element = document.getElementById(id)
-        if (element) {
-          intersectionObserver.observe(element)
-          observedIds.add(id)
-        }
-      }
-    }
-    observeAvailableSections()
-    let mutationObserver = null
-    if (observedIds.size < sectionIds.length) {
-      mutationObserver = new MutationObserver(() => {
-        observeAvailableSections()
-        if (observedIds.size === sectionIds.length) {
-          mutationObserver?.disconnect()
-        }
-      })
-      mutationObserver.observe(document.body, {
-        childList: true,
-        subtree: true,
-      })
-    }
+    // itself renders immediately, before that data arrives. Re-checking
+    // whenever the DOM changes means their nav link can still highlight
+    // once they mount, without requiring the user to scroll again first.
+    const mutationObserver = new MutationObserver(scheduleUpdate)
+    mutationObserver.observe(document.body, {
+      childList: true,
+      subtree: true,
+    })
     return () => {
-      intersectionObserver.disconnect()
-      mutationObserver?.disconnect()
+      window.removeEventListener('scroll', scheduleUpdate)
+      window.removeEventListener('resize', scheduleUpdate)
+      mutationObserver.disconnect()
+      if (frame !== null) cancelAnimationFrame(frame)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- sectionIds is a
-    // fresh array each render by design (caller passes a literal); re-running
-    // per-id-value change would defeat memoization for no benefit here.
+    // sectionIds is a fresh array each render by design (caller passes a
+    // literal); re-running per-id-value change would defeat memoization for
+    // no benefit here.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sectionIds.join(',')])
   return activeId
 }
