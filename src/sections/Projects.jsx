@@ -1,18 +1,56 @@
 import { useMemo, useState } from 'react'
-import { motion } from 'framer-motion'
+import { AnimatePresence, motion } from 'framer-motion'
 import { ArrowRight, ExternalLink, LayoutGrid } from 'lucide-react'
-import { Link } from 'react-router-dom'
 import { useCursorSpotlight } from '../hooks/useCursorSpotlight'
+import { ProjectModal } from './ProjectModal'
 const ALL_FILTER = 'All'
 const INITIAL_VISIBLE_COUNT = 6
 const LOAD_MORE_COUNT = 3
 
-// Cards fade/lift in one after another (not all at once) each time the
-// filter changes — same treatment as the Skills category tabs.
+// The header (badge/title/description/filters) reveals first, then the
+// card grid follows.
+const SECTION_VARIANTS = {
+  hidden: {},
+  show: {
+    transition: {
+      staggerChildren: 0.3,
+    },
+  },
+}
+const HEADER_VARIANTS = {
+  hidden: {
+    opacity: 0,
+    y: 24,
+  },
+  show: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.6,
+      ease: 'easeOut',
+    },
+  },
+}
+// Cards fade/lift in one after another (not all at once) — both the
+// first time the grid scrolls into view and every time the filter
+// changes (the grid remounts via `key`, replaying this from scratch) —
+// same treatment as the Skills category tabs.
+//
+// This grid gets its OWN `whileInView` trigger below (rather than
+// inheriting "show" from SECTION_VARIANTS above) on purpose: `projects`
+// loads asynchronously, so on a hard refresh the cards can still be an
+// empty array — and therefore not exist in the DOM yet — at the exact
+// moment the section first scrolls into view. Framer Motion only
+// pushes an inherited variant to the children present *at that moment*;
+// cards that mount later, once the real data arrives, never got that
+// push and stayed permanently stuck at `hidden`. Giving the grid its
+// own observer means it checks visibility whenever it actually mounts
+// with real cards, not whenever some ancestor happened to.
 const GRID_VARIANTS = {
   hidden: {},
   show: {
     transition: {
+      delayChildren: 0.15,
       staggerChildren: 0.08,
     },
   },
@@ -56,6 +94,7 @@ export function Projects({ projects }) {
   const { spotlightRef, handleMouseMove } = useCursorSpotlight()
   const [activeFilter, setActiveFilter] = useState(ALL_FILTER)
   const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE_COUNT)
+  const [selectedProject, setSelectedProject] = useState(null)
   const filters = useMemo(() => [ALL_FILTER, ...uniqueSkillNames(projects)], [projects])
   const filteredProjects =
     activeFilter === ALL_FILTER
@@ -80,63 +119,63 @@ export function Projects({ projects }) {
       />
 
       <motion.div
-        initial={{
-          opacity: 0,
-          y: 40,
-        }}
-        whileInView={{
-          opacity: 1,
-          y: 0,
-        }}
+        variants={SECTION_VARIANTS}
+        initial="hidden"
+        whileInView="show"
         viewport={{
           once: true,
           amount: 0.2,
         }}
-        transition={{
-          duration: 0.6,
-          ease: 'easeOut',
-        }}
         className="relative z-10 mx-auto max-w-6xl text-center"
       >
-        <div className="flex items-center justify-center gap-3 text-sm tracking-widest text-[var(--text-muted)] uppercase">
-          <span className="font-mono text-[var(--accent)]">03</span>
-          <span className="h-px w-8 bg-gradient-to-r from-[var(--accent-from)] to-[var(--accent-to)]" />
-          <span>Projects</span>
-        </div>
-
-        <h2 className="mt-2 text-4xl font-bold text-[var(--text)] sm:text-5xl">
-          My{' '}
-          <span className="bg-gradient-to-r from-[var(--accent-from)] to-[var(--accent-to)] bg-clip-text text-transparent italic">
-            projects
-          </span>
-        </h2>
-        <p className="mx-auto mt-2 max-w-xl text-[var(--text-muted)]">
-          Selected projects demonstrating practical solutions and well-architected digital experiences.
-        </p>
-
-        {filters.length > 1 && (
-          <div className="mt-8 flex flex-wrap justify-center gap-2">
-            {filters.map((filter) => (
-              <button
-                key={filter}
-                type="button"
-                onClick={() => selectFilter(filter)}
-                aria-pressed={activeFilter === filter}
-                className={`rounded-full border px-4 py-1.5 text-sm transition-colors ${activeFilter === filter ? 'border-transparent bg-gradient-to-r from-[var(--accent-from)] to-[var(--accent-to)] text-white' : 'border-[var(--border)] text-[var(--text-muted)] hover:text-[var(--text)]'}`}
-              >
-                {filter}
-              </button>
-            ))}
+        <motion.div variants={HEADER_VARIANTS}>
+          <div className="flex items-center justify-center gap-3 text-sm tracking-widest text-[var(--text-muted)] uppercase">
+            <span className="font-mono text-[var(--accent)]">03</span>
+            <span className="h-px w-8 bg-gradient-to-r from-[var(--accent-from)] to-[var(--accent-to)]" />
+            <span>Projects</span>
           </div>
-        )}
+
+          <h2 className="mt-2 text-4xl font-bold text-[var(--text)] sm:text-5xl">
+            My{' '}
+            <span className="bg-gradient-to-r from-[var(--accent-from)] to-[var(--accent-to)] bg-clip-text text-transparent italic">
+              projects
+            </span>
+          </h2>
+          <p className="mx-auto mt-2 max-w-xl text-[var(--text-muted)]">
+            Selected projects demonstrating practical solutions and well-architected digital experiences.
+          </p>
+
+          {filters.length > 1 && (
+            <div className="mt-8 flex flex-wrap justify-center gap-2">
+              {filters.map((filter) => (
+                <button
+                  key={filter}
+                  type="button"
+                  onClick={() => selectFilter(filter)}
+                  aria-pressed={activeFilter === filter}
+                  className={`rounded-full border px-4 py-1.5 text-sm transition-colors ${activeFilter === filter ? 'border-transparent bg-gradient-to-r from-[var(--accent-from)] to-[var(--accent-to)] text-white' : 'border-[var(--border)] text-[var(--text-muted)] hover:text-[var(--text)]'}`}
+                >
+                  {filter}
+                </button>
+              ))}
+            </div>
+          )}
+        </motion.div>
 
         <motion.div
           // Remounts (and re-plays the staggered entrance below) each time
           // the filter changes, since `key` changes with `activeFilter`.
+          // Own independent whileInView trigger — see the comment on
+          // GRID_VARIANTS above for why this can't just inherit "show"
+          // from the section around it.
           key={activeFilter}
           variants={GRID_VARIANTS}
           initial="hidden"
-          animate="show"
+          whileInView="show"
+          viewport={{
+            once: true,
+            amount: 0.2,
+          }}
           className="mt-10 grid grid-cols-1 gap-6 text-left sm:grid-cols-2 lg:grid-cols-3"
         >
           {visibleProjects.map((project, index) => (
@@ -150,12 +189,6 @@ export function Projects({ projects }) {
               />
 
               <div className="relative flex h-full flex-col overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--bg-alt)] transition-all duration-300 group-hover:-translate-y-1 group-hover:border-[var(--accent)]">
-                {/* The whole card navigates to the project's detail page —
-                    laid underneath everything else so the site/repo links
-                    (real <a> tags below) can still be clicked independently
-                    without nesting an anchor inside an anchor. */}
-                <Link to={`/projects/${project.slug}`} aria-label={project.title} className="absolute inset-0 z-0" />
-
                 {/* Preview image, with a placeholder for projects that don't
                   have one yet — the tech stack only reveals over it on
                   hover, matching the reference's reveal-on-hover treatment
@@ -235,6 +268,21 @@ export function Projects({ projects }) {
                     </span>
                   </div>
                 </div>
+
+                {/* The whole card opens the details modal. Placed last so it
+                    paints above the image/content siblings above (all three
+                    share the same z-index stacking level, and later DOM
+                    order wins) — otherwise those non-interactive siblings
+                    would sit on top and swallow every click before it ever
+                    reached this button. The site/repo links above have
+                    their own z-10, which keeps them clickable on top of
+                    this in turn. */}
+                <button
+                  type="button"
+                  onClick={() => setSelectedProject(project)}
+                  aria-label={project.title}
+                  className="absolute inset-0 z-0"
+                />
               </div>
             </motion.div>
           ))}
@@ -259,6 +307,10 @@ export function Projects({ projects }) {
           </button>
         )}
       </motion.div>
+
+      <AnimatePresence>
+        {selectedProject && <ProjectModal project={selectedProject} onClose={() => setSelectedProject(null)} />}
+      </AnimatePresence>
     </section>
   )
 }

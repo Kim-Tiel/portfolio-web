@@ -39,6 +39,59 @@ function logFileName(company) {
   return company.toLowerCase().replace(/[^a-z0-9]/g, '') || 'company'
 }
 
+// The whole block still fades + lifts as one piece on scroll-in.
+const SECTION_VARIANTS = {
+  hidden: {
+    opacity: 0,
+    y: 40,
+  },
+  show: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.6,
+      ease: 'easeOut',
+    },
+  },
+}
+
+// The commit list rows reveal one after another rather than all at once.
+//
+// This list gets its OWN `whileInView` trigger below (rather than
+// inheriting "show" from SECTION_VARIANTS above) on purpose: `experiences`
+// loads asynchronously, so on a hard refresh the list can still be empty —
+// and therefore not exist in the DOM yet — at the exact moment the section
+// first scrolls into view. Framer Motion only pushes an inherited variant
+// to the children present *at that moment*; rows that mount later, once
+// the real data arrives, never got that push and stayed permanently stuck
+// at `hidden` (this is exactly what made the list disappear on refresh
+// while the independently-triggered detail panel on the right kept
+// working fine). Giving the list its own observer means it checks
+// visibility whenever it actually mounts with real rows, not whenever
+// some ancestor happened to.
+const LIST_VARIANTS = {
+  hidden: {},
+  show: {
+    transition: {
+      staggerChildren: 0.1,
+    },
+  },
+}
+const LIST_ITEM_VARIANTS = {
+  hidden: {
+    opacity: 0,
+    y: 16,
+  },
+  show: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.4,
+      ease: 'easeOut',
+    },
+  },
+}
+
 // The detail panel's pieces (commit meta, role/company, each highlight
 // line, the stack tags) cascade in one after another rather than the
 // whole block fading in as one flat piece.
@@ -83,21 +136,12 @@ export function Experience({ experiences, profile }) {
       />
 
       <motion.div
-        initial={{
-          opacity: 0,
-          y: 40,
-        }}
-        whileInView={{
-          opacity: 1,
-          y: 0,
-        }}
+        variants={SECTION_VARIANTS}
+        initial="hidden"
+        whileInView="show"
         viewport={{
           once: true,
           amount: 0.2,
-        }}
-        transition={{
-          duration: 0.6,
-          ease: 'easeOut',
         }}
         className="relative z-10 mx-auto max-w-6xl text-center"
       >
@@ -120,13 +164,22 @@ export function Experience({ experiences, profile }) {
         {sorted.length > 0 && (
           <div className="mt-10 grid gap-0 overflow-hidden rounded-2xl border border-[var(--glass-border)] bg-[var(--glass-bg)] text-left shadow-lg shadow-black/10 [backdrop-filter:blur(24px)_saturate(180%)] lg:grid-cols-2">
             {/* Commit list */}
-            <ol className="border-b border-[var(--border)] p-6 lg:border-r lg:border-b-0">
+            <motion.ol
+              variants={LIST_VARIANTS}
+              initial="hidden"
+              whileInView="show"
+              viewport={{
+                once: true,
+                amount: 0.2,
+              }}
+              className="border-b border-[var(--border)] p-6 lg:border-r lg:border-b-0"
+            >
               {sorted.map((experience, index) => {
                 const isSelected = experience.id === selected?.id
                 const isHead = index === 0
                 const isLast = index === sorted.length - 1
                 return (
-                  <li key={experience.id} className="flex gap-4">
+                  <motion.li key={experience.id} variants={LIST_ITEM_VARIANTS} className="flex gap-4">
                     {/* Rail: connector segments above/below the marker, as
                         separate elements rather than one line the marker
                         sits on top of — so the line actually breaks at
@@ -163,10 +216,10 @@ export function Experience({ experiences, profile }) {
                         {experience.company} · {formatDateRange(experience.start_date, experience.end_date)}
                       </span>
                     </button>
-                  </li>
+                  </motion.li>
                 )
               })}
-            </ol>
+            </motion.ol>
 
             {/* Selected commit detail — keyed on the commit id so switching
                 selection remounts this, replaying the fade-in and giving
