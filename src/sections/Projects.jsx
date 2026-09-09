@@ -208,7 +208,16 @@ export function Projects({ projects }) {
                   )}
 
                   {project.skills.length > 0 && (
-                    <div className="absolute inset-x-0 bottom-0 flex translate-y-2 flex-wrap gap-1.5 bg-gradient-to-t from-black/85 to-transparent p-3 pt-8 opacity-0 transition-[opacity,transform] duration-300 ease-out group-hover:translate-y-0 group-hover:opacity-100">
+                    // Visible by default — touch devices have no ":hover" to
+                    // ever trigger a reveal, so hiding this unconditionally
+                    // (as `group-hover:opacity-100` alone would, since
+                    // Tailwind already scopes `hover`/`group-hover` to
+                    // `@media (hover: hover)` under the hood) would mean
+                    // this content just never appears on mobile. The
+                    // hide-then-reveal-on-hover treatment only kicks in from
+                    // `md:` up, matching this card grid's own breakpoint for
+                    // "wide enough to plausibly be a mouse, not a finger".
+                    <div className="absolute inset-x-0 bottom-0 flex flex-wrap gap-1.5 bg-gradient-to-t from-black/85 to-transparent p-3 pt-8 opacity-100 transition-[opacity,transform] duration-300 ease-out md:translate-y-2 md:opacity-0 md:group-hover:translate-y-0 md:group-hover:opacity-100">
                       {project.skills.slice(0, 4).map((skill) => (
                         <span
                           key={skill.id}
