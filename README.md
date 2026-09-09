@@ -31,7 +31,7 @@ This is the **pure JavaScript** build of the site — same design, same features
 ## Tech Stack
 
 **Core**
-- [React 19](https://react.dev/) (JavaScript, no TypeScript)
+- [React 19](https://react.dev/)
 - [Vite](https://vite.dev/) — dev server & build tooling
 - [Tailwind CSS v4](https://tailwindcss.com/) — utility-first styling, theme via CSS custom properties
 
