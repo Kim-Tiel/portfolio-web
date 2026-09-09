@@ -6,28 +6,38 @@ function getInitials(name) {
   const last = parts.length > 1 ? parts[parts.length - 1][0] : ''
   return (first + last).toUpperCase()
 }
+
+// The photo and the details column reveal one after another (photo first)
+// rather than together — the parent just needs staggerChildren, each
+// column supplies its own hidden/show state via these shared variants.
+const COLUMNS_VARIANTS = {
+  hidden: {},
+  show: {
+    transition: {
+      staggerChildren: 0.25,
+    },
+  },
+}
+const COLUMN_VARIANTS = {
+  hidden: {
+    opacity: 0,
+    y: 24,
+  },
+  show: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.6,
+      ease: 'easeOut',
+    },
+  },
+}
 export function About({ profile, education }) {
   const { spotlightRef, handleMouseMove } = useCursorSpotlight()
   return (
-    <motion.section
+    <section
       id="about"
       onMouseMove={handleMouseMove}
-      initial={{
-        opacity: 0,
-        y: 40,
-      }}
-      whileInView={{
-        opacity: 1,
-        y: 0,
-      }}
-      viewport={{
-        once: true,
-        amount: 0.2,
-      }}
-      transition={{
-        duration: 0.6,
-        ease: 'easeOut',
-      }}
       className="relative flex min-h-[calc(100vh-90px)] flex-col justify-center overflow-hidden px-4 py-24"
     >
       {/* Flat background — no static ambient blobs here (unlike the hero),
@@ -48,8 +58,17 @@ export function About({ profile, education }) {
         <span>About</span>
       </div>
 
-      <div className="relative z-10 mx-auto mt-10 grid w-full max-w-6xl gap-12 lg:grid-cols-[minmax(0,420px)_1fr] lg:items-start">
-        <div className="relative mx-auto w-full max-w-md">
+      <motion.div
+        variants={COLUMNS_VARIANTS}
+        initial="hidden"
+        whileInView="show"
+        viewport={{
+          once: true,
+          amount: 0.2,
+        }}
+        className="relative z-10 mx-auto mt-10 grid w-full max-w-6xl gap-12 lg:grid-cols-[minmax(0,420px)_1fr] lg:items-start"
+      >
+        <motion.div variants={COLUMN_VARIANTS} className="relative mx-auto w-full max-w-md">
           <div
             aria-hidden
             className="absolute -right-3 -bottom-3 h-full w-full rounded-2xl border border-[var(--accent)]/40"
@@ -91,9 +110,9 @@ export function About({ profile, education }) {
               <span aria-hidden className="mt-2 block h-px w-10 bg-[var(--accent)]" />
             </div>
           </div>
-        </div>
+        </motion.div>
 
-        <div>
+        <motion.div variants={COLUMN_VARIANTS}>
           <h2 className="text-4xl font-bold text-[var(--text)] sm:text-5xl">
             About{' '}
             <span className="bg-gradient-to-r from-[var(--accent-from)] to-[var(--accent-to)] bg-clip-text text-transparent italic">
@@ -155,8 +174,8 @@ export function About({ profile, education }) {
               </div>
             </div>
           )}
-        </div>
-      </div>
-    </motion.section>
+        </motion.div>
+      </motion.div>
+    </section>
   )
 }

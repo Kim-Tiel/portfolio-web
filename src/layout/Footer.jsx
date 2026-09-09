@@ -1,6 +1,5 @@
 import { motion } from 'framer-motion'
 import { ChevronUp, FileText, Mail, MapPin } from 'lucide-react'
-import { Link } from 'react-router-dom'
 import { useScrolled } from './useScrolled'
 const QUICK_LINKS = [
   {
@@ -49,6 +48,37 @@ function scrollToSection(id) {
 }
 function uniqueSkillNames(skills) {
   return Array.from(new Set(skills.map((skill) => skill.name)))
+}
+
+// Each list below (quick links, featured work, tech stack, connect icons)
+// reveals one item after another rather than all at once. Featured Work
+// and Tech Stack are built from `projects`/`skills`, which load
+// asynchronously — each of these gets its OWN `whileInView` trigger
+// (rather than inheriting "show" from the footer's outer fade) so a list
+// that's still empty at the moment the footer first scrolls into view
+// still animates correctly once its real data arrives. See the comment
+// on Projects.jsx's GRID_VARIANTS for the full explanation.
+const LIST_VARIANTS = {
+  hidden: {},
+  show: {
+    transition: {
+      staggerChildren: 0.06,
+    },
+  },
+}
+const LIST_ITEM_VARIANTS = {
+  hidden: {
+    opacity: 0,
+    y: 12,
+  },
+  show: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.3,
+      ease: 'easeOut',
+    },
+  },
 }
 export function Footer({ profile, projects, skills }) {
   // Reuses the nav's "past a threshold" scroll tracker with a much taller
@@ -115,9 +145,18 @@ export function Footer({ profile, projects, skills }) {
                 <span className="h-px w-6 bg-gradient-to-r from-[var(--accent-from)] to-[var(--accent-to)]" />
                 <span className="text-[var(--text-muted)]">Quick Links</span>
               </div>
-              <ul className="mt-5 space-y-3">
+              <motion.ul
+                variants={LIST_VARIANTS}
+                initial="hidden"
+                whileInView="show"
+                viewport={{
+                  once: true,
+                  amount: 0.2,
+                }}
+                className="mt-5 space-y-3"
+              >
                 {QUICK_LINKS.map((link, index) => (
-                  <li key={link.id}>
+                  <motion.li key={link.id} variants={LIST_ITEM_VARIANTS}>
                     <button
                       type="button"
                       onClick={() => scrollToSection(link.id)}
@@ -128,9 +167,9 @@ export function Footer({ profile, projects, skills }) {
                       </span>
                       {link.label}
                     </button>
-                  </li>
+                  </motion.li>
                 ))}
-              </ul>
+              </motion.ul>
             </div>
 
             {/* Featured work */}
@@ -141,18 +180,28 @@ export function Footer({ profile, projects, skills }) {
                   <span className="h-px w-6 bg-gradient-to-r from-[var(--accent-from)] to-[var(--accent-to)]" />
                   <span className="text-[var(--text-muted)]">Featured Work</span>
                 </div>
-                <ul className="mt-5 space-y-3">
+                <motion.ul
+                  variants={LIST_VARIANTS}
+                  initial="hidden"
+                  whileInView="show"
+                  viewport={{
+                    once: true,
+                    amount: 0.2,
+                  }}
+                  className="mt-5 space-y-3"
+                >
                   {featuredProjects.map((project) => (
-                    <li key={project.id}>
-                      <Link
-                        to={`/projects/${project.slug}`}
+                    <motion.li key={project.id} variants={LIST_ITEM_VARIANTS}>
+                      <button
+                        type="button"
+                        onClick={() => scrollToSection('projects')}
                         className="text-sm text-[var(--text-muted)] transition-colors hover:text-[var(--text)]"
                       >
                         {project.title}
-                      </Link>
-                    </li>
+                      </button>
+                    </motion.li>
                   ))}
-                </ul>
+                </motion.ul>
               </div>
             )}
 
@@ -165,16 +214,26 @@ export function Footer({ profile, projects, skills }) {
                     <span className="h-px w-6 bg-gradient-to-r from-[var(--accent-from)] to-[var(--accent-to)]" />
                     <span className="text-[var(--text-muted)]">Tech Stack</span>
                   </div>
-                  <div className="mt-5 flex flex-wrap gap-2">
+                  <motion.div
+                    variants={LIST_VARIANTS}
+                    initial="hidden"
+                    whileInView="show"
+                    viewport={{
+                      once: true,
+                      amount: 0.2,
+                    }}
+                    className="mt-5 flex flex-wrap gap-2"
+                  >
                     {techStack.map((name) => (
-                      <span
+                      <motion.span
                         key={name}
+                        variants={LIST_ITEM_VARIANTS}
                         className="rounded-md border border-[var(--border)] px-2 py-1 font-mono text-[10px] text-[var(--text-muted)] uppercase"
                       >
                         {name}
-                      </span>
+                      </motion.span>
                     ))}
-                  </div>
+                  </motion.div>
                 </>
               )}
 
@@ -183,9 +242,19 @@ export function Footer({ profile, projects, skills }) {
                 <span className="h-px w-6 bg-gradient-to-r from-[var(--accent-from)] to-[var(--accent-to)]" />
                 <span className="text-[var(--text-muted)]">Connect</span>
               </div>
-              <div className="mt-5 flex items-center gap-3">
+              <motion.div
+                variants={LIST_VARIANTS}
+                initial="hidden"
+                whileInView="show"
+                viewport={{
+                  once: true,
+                  amount: 0.2,
+                }}
+                className="mt-5 flex items-center gap-3"
+              >
                 {profile?.github_url && (
-                  <a
+                  <motion.a
+                    variants={LIST_ITEM_VARIANTS}
                     href={profile.github_url}
                     target="_blank"
                     rel="noreferrer"
@@ -193,10 +262,11 @@ export function Footer({ profile, projects, skills }) {
                     className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[var(--border)] text-[var(--text-muted)] transition-colors hover:border-[var(--accent)] hover:text-[var(--text)]"
                   >
                     <GithubIcon />
-                  </a>
+                  </motion.a>
                 )}
                 {profile?.linkedin_url && (
-                  <a
+                  <motion.a
+                    variants={LIST_ITEM_VARIANTS}
                     href={profile.linkedin_url}
                     target="_blank"
                     rel="noreferrer"
@@ -204,28 +274,30 @@ export function Footer({ profile, projects, skills }) {
                     className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[var(--border)] text-[var(--text-muted)] transition-colors hover:border-[var(--accent)] hover:text-[var(--text)]"
                   >
                     <LinkedinIcon />
-                  </a>
+                  </motion.a>
                 )}
                 {profile?.email && (
-                  <a
+                  <motion.a
+                    variants={LIST_ITEM_VARIANTS}
                     href={`mailto:${profile.email}`}
                     aria-label="Email"
                     className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[var(--border)] text-[var(--text-muted)] transition-colors hover:border-[var(--accent)] hover:text-[var(--text)]"
                   >
                     <Mail size={16} />
-                  </a>
+                  </motion.a>
                 )}
                 {profile?.resume_url && (
-                  <a
+                  <motion.a
+                    variants={LIST_ITEM_VARIANTS}
                     href={profile.resume_url}
                     download
                     aria-label="Resume"
                     className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[var(--border)] text-[var(--text-muted)] transition-colors hover:border-[var(--accent)] hover:text-[var(--text)]"
                   >
                     <FileText size={16} />
-                  </a>
+                  </motion.a>
                 )}
-              </div>
+              </motion.div>
             </div>
           </div>
 

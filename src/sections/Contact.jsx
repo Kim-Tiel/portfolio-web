@@ -13,6 +13,37 @@ const contactSchema = z.object({
 })
 const inputClasses =
   'mt-1 w-full rounded-lg border border-[var(--border)] bg-[var(--bg)] px-4 py-2.5 text-[var(--text)] outline-none transition-colors focus:border-[var(--accent)]'
+
+// The info cards reveal one after another rather than all at once.
+//
+// This gets its OWN `whileInView` trigger below (rather than inheriting
+// "show" from an ancestor) because `infoCards` is built from `profile`,
+// which loads asynchronously — see the comment on Projects.jsx's
+// GRID_VARIANTS for why a card list that can still be empty at the
+// moment an ancestor's viewport trigger fires needs its own observer
+// instead.
+const CARD_LIST_VARIANTS = {
+  hidden: {},
+  show: {
+    transition: {
+      staggerChildren: 0.1,
+    },
+  },
+}
+const CARD_ITEM_VARIANTS = {
+  hidden: {
+    opacity: 0,
+    y: 16,
+  },
+  show: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.4,
+      ease: 'easeOut',
+    },
+  },
+}
 export function Contact({ availableFor, profile }) {
   const { spotlightRef, handleMouseMove } = useCursorSpotlight()
   const {
@@ -111,10 +142,20 @@ export function Contact({ availableFor, profile }) {
         <p className="mt-2 text-[var(--text-muted)]">Let's work together on your next project</p>
 
         <div className="mt-10 grid grid-cols-1 gap-6 text-left lg:grid-cols-[1fr_1.5fr]">
-          <div className="space-y-4">
+          <motion.div
+            variants={CARD_LIST_VARIANTS}
+            initial="hidden"
+            whileInView="show"
+            viewport={{
+              once: true,
+              amount: 0.2,
+            }}
+            className="space-y-4"
+          >
             {infoCards.map((card, index) => (
-              <div
+              <motion.div
                 key={card.label}
+                variants={CARD_ITEM_VARIANTS}
                 className="relative rounded-2xl border border-[var(--border)] bg-[var(--bg-alt)] p-6 transition-all duration-300 hover:border-[var(--accent)]/60 hover:shadow-[0_0_30px_-8px_var(--accent)]"
               >
                 <span className="absolute top-4 right-4 font-mono text-xs text-[var(--text-muted)]">
@@ -125,9 +166,9 @@ export function Contact({ availableFor, profile }) {
                 </div>
                 <p className="mt-4 text-xs tracking-widest text-[var(--text-muted)] uppercase">{card.label}</p>
                 <div className="mt-1 font-semibold text-[var(--text)]">{card.value}</div>
-              </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
 
           <div className="rounded-2xl border border-[var(--border)] bg-[var(--bg-alt)] p-6 sm:p-8">
             <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-5">
