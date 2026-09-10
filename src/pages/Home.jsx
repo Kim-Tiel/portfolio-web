@@ -6,6 +6,7 @@ import { Skills } from '../sections/Skills'
 import { Projects } from '../sections/Projects'
 import { Experience } from '../sections/Experience'
 import { LiveDemo } from '../sections/LiveDemo'
+import { MemoryLog } from '../sections/MemoryLog'
 import { Contact } from '../sections/Contact'
 import { useProfileQuery } from '../api/profile'
 import { useEducationQuery } from '../api/education'
@@ -35,6 +36,7 @@ export function Home() {
         <Projects projects={projects} />
         <Experience experiences={experiences} profile={profile} />
         <LiveDemo profile={profile} skills={skills} projects={projects} />
+        <MemoryLog email={profile?.email} />
         <Contact availableFor={profile?.available_for ?? []} profile={profile} />
       </main>
       <Footer profile={profile} projects={projects} skills={skills} />

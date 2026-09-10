@@ -88,6 +88,20 @@ export const mockEducation = [
     milestones: [],
   },
 ]
+export const mockMemoryLog = [
+  {
+    id: 'm1',
+    display_name: 'Hasan Hamadeh',
+    message: 'The further I scrolled, the more amazing things I discovered. Keep going!',
+    created_at: new Date(Date.now() - 3 * 86_400_000).toISOString(),
+  },
+  {
+    id: 'm2',
+    display_name: 'Anonymous',
+    message: 'Clean work.',
+    created_at: new Date(Date.now() - 60 * 60_000).toISOString(),
+  },
+]
 export const handlers = [
   http.get(`${API_BASE_URL}/api/v1/profile`, () => HttpResponse.json(mockProfile)),
   http.get(`${API_BASE_URL}/api/v1/skills`, () => HttpResponse.json(mockSkills)),
@@ -102,6 +116,19 @@ export const handlers = [
   }),
   http.get(`${API_BASE_URL}/api/v1/experiences`, () => HttpResponse.json(mockExperiences)),
   http.get(`${API_BASE_URL}/api/v1/education`, () => HttpResponse.json(mockEducation)),
+  http.get(`${API_BASE_URL}/api/v1/memory_log_entries`, () => HttpResponse.json(mockMemoryLog)),
+  http.post(`${API_BASE_URL}/api/v1/memory_log_entries`, async ({ request }) => {
+    const { memory_log_entry: input } = await request.json()
+    return HttpResponse.json(
+      {
+        id: 'new',
+        display_name: input.display_name?.trim() || 'Anonymous',
+        message: input.message,
+        created_at: new Date().toISOString(),
+      },
+      { status: 201 },
+    )
+  }),
   http.post(`${API_BASE_URL}/api/v1/contact_messages`, () =>
     HttpResponse.json(
       {
