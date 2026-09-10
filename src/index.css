@@ -91,3 +91,7 @@ body {
     animation: none;
   }
 }
+
+:root[data-theme="dark"] .skill-icon {
+  filter: brightness(0) invert(1);
+}

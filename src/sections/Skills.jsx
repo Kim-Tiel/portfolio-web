@@ -169,10 +169,10 @@ export function Skills({ skills }) {
 
               <div
                 aria-hidden
-                className="flex h-16 w-16 flex-none items-center justify-center rounded-lg bg-[var(--border)] p-3 text-xs font-bold text-[var(--text)] transition-transform duration-300 ease-out hover:-rotate-6 hover:scale-110 motion-reduce:transition-none motion-reduce:hover:rotate-0 motion-reduce:hover:scale-100"
+                className="flex h-16 w-16 flex-none items-center justify-center rounded-lg border border-[var(--glass-border)] bg-[var(--glass-bg)] p-3 text-xs font-bold text-[var(--text)] shadow-lg shadow-black/10 [backdrop-filter:blur(24px)_saturate(180%)] transition-transform duration-300 ease-out hover:-rotate-6 hover:scale-110 motion-reduce:transition-none motion-reduce:hover:rotate-0 motion-reduce:hover:scale-100"
               >
                 {skill.icon_url ? (
-                  <img src={skill.icon_url} alt="" loading="lazy" className="h-full w-full object-contain" />
+                  <img src={skill.icon_url} alt="" loading="lazy" className="skill-icon h-full w-full object-contain" />
                 ) : (
                   getIconLabel(skill.name)
                 )}
