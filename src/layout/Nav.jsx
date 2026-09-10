@@ -1,7 +1,8 @@
 import { useState } from 'react'
-import { motion } from 'framer-motion'
+import { AnimatePresence, motion } from 'framer-motion'
 import { Menu, X } from 'lucide-react'
 import { ThemeToggle } from '../theme/ThemeToggle'
+import { usePrefersReducedMotion } from '../hooks/usePrefersReducedMotion'
 import { useActiveSection } from './useActiveSection'
 import { useScrolled } from './useScrolled'
 const NAV_LINKS = [
@@ -21,15 +22,55 @@ const NAV_LINKS = [
     id: 'projects',
     label: 'Projects',
   },
+]
+// The final nav slot is a single button whose label morphs as you scroll
+// through this tail of sections — none of them have their own permanent
+// menu entry, so the slot just reflects whichever one you're looking at.
+const TAIL_LINKS = [
   {
     id: 'experience',
     label: 'Experience',
   },
+  {
+    id: 'live-demo',
+    label: 'Live Demo',
+  },
+  {
+    id: 'memory-log',
+    label: 'Memory Log',
+  },
 ]
+const ALL_SECTION_IDS = [...NAV_LINKS, ...TAIL_LINKS].map((link) => link.id)
 const DOT_TRANSITION = {
   type: 'spring',
   stiffness: 380,
   damping: 30,
+}
+const LABEL_TRANSITION = {
+  duration: 0.24,
+  ease: [0.22, 1, 0.36, 1],
+}
+
+// Swaps its text with a soft blur-and-drift whenever `label` changes;
+// falls back to a plain swap when the user prefers reduced motion.
+function MorphingLabel({ label, reduced }) {
+  if (reduced) return <span className="whitespace-nowrap">{label}</span>
+  return (
+    <span className="relative inline-flex overflow-hidden py-0.5">
+      <AnimatePresence mode="wait" initial={false}>
+        <motion.span
+          key={label}
+          initial={{ y: 12, opacity: 0, filter: 'blur(4px)' }}
+          animate={{ y: 0, opacity: 1, filter: 'blur(0px)' }}
+          exit={{ y: -12, opacity: 0, filter: 'blur(4px)' }}
+          transition={LABEL_TRANSITION}
+          className="whitespace-nowrap"
+        >
+          {label}
+        </motion.span>
+      </AnimatePresence>
+    </span>
+  )
 }
 
 // A fixed-size invisible spacer keeps every link the same width whether or
@@ -55,8 +96,14 @@ function NavDot({ isActive, layoutId }) {
 }
 export function Nav() {
   const [mobileOpen, setMobileOpen] = useState(false)
-  const activeId = useActiveSection(NAV_LINKS.map((link) => link.id))
+  const activeId = useActiveSection(ALL_SECTION_IDS)
   const scrolled = useScrolled()
+  const reducedMotion = usePrefersReducedMotion()
+  // Which tail section (if any) is in view, and the label the morphing
+  // slot should show — defaulting to the first so it reads "Experience"
+  // until you actually scroll into that stretch.
+  const activeTail = TAIL_LINKS.find((link) => link.id === activeId) ?? TAIL_LINKS[0]
+  const tailActive = TAIL_LINKS.some((link) => link.id === activeId)
   function scrollToSection(id) {
     document.getElementById(id)?.scrollIntoView({
       behavior: 'smooth',
@@ -96,6 +143,15 @@ export function Nav() {
                 {link.label}
               </button>
             ))}
+            <button
+              type="button"
+              onClick={() => scrollToSection(activeTail.id)}
+              aria-current={tailActive ? 'true' : undefined}
+              className={`flex items-center gap-2 text-base transition-colors md:min-w-[7rem] ${tailActive ? 'text-[var(--text)]' : 'text-[var(--text-muted)] hover:text-[var(--text)]'}`}
+            >
+              <NavDot isActive={tailActive} layoutId="nav-active-dot-desktop" />
+              <MorphingLabel label={activeTail.label} reduced={reducedMotion} />
+            </button>
           </nav>
 
           <ThemeToggle />
@@ -140,6 +196,15 @@ export function Nav() {
               {link.label}
             </button>
           ))}
+          <button
+            type="button"
+            onClick={() => scrollToSection(activeTail.id)}
+            aria-current={tailActive ? 'true' : undefined}
+            className={`flex items-center gap-2 rounded px-3 py-2 text-left text-base transition-colors ${tailActive ? 'text-[var(--text)]' : 'text-[var(--text-muted)]'}`}
+          >
+            <NavDot isActive={tailActive} layoutId="nav-active-dot-mobile" />
+            <MorphingLabel label={activeTail.label} reduced={reducedMotion} />
+          </button>
           <button
             type="button"
             onClick={() => scrollToSection('contact')}

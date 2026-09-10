@@ -128,7 +128,7 @@ export function Contact({ availableFor, profile }) {
         className="relative z-10 mx-auto max-w-6xl text-center"
       >
         <div className="flex items-center justify-center gap-3 text-sm tracking-widest text-[var(--text-muted)] uppercase">
-          <span className="font-mono text-[var(--accent)]">05</span>
+          <span className="font-mono text-[var(--accent)]">07</span>
           <span className="h-px w-8 bg-gradient-to-r from-[var(--accent-from)] to-[var(--accent-to)]" />
           <span>Get in Touch</span>
         </div>
