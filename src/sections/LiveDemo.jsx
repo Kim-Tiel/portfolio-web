@@ -173,24 +173,26 @@ export function LiveDemo({ profile, skills, projects }) {
           duration: 0.6,
           ease: 'easeOut',
         }}
-        className="relative z-10 mx-auto max-w-6xl text-center"
+        className="relative z-10 mx-auto max-w-6xl"
       >
-        <div className="flex items-center justify-center gap-3 text-sm tracking-widest text-[var(--text-muted)] uppercase">
-          <span className="font-mono text-[var(--accent)]">4.5</span>
-          <span className="h-px w-8 bg-gradient-to-r from-[var(--accent-from)] to-[var(--accent-to)]" />
-          <span>Live Demo</span>
+        <div className="flex items-center gap-3 text-sm tracking-widest text-[var(--text-muted)] uppercase">
+          <span className="h-1.5 w-1.5 rounded-full bg-[var(--accent)]" />
+          <span className="font-mono text-[var(--accent)]">05</span>
+          <span>/ Live Demo</span>
         </div>
 
-        <h2 className="mt-2 text-4xl font-bold text-[var(--text)] sm:text-5xl">
-          Try the{' '}
-          <span className="bg-gradient-to-r from-[var(--accent-from)] to-[var(--accent-to)] bg-clip-text text-transparent italic">
-            backend
-          </span>
-          .
-        </h2>
-        <p className="mx-auto mt-2 max-w-xl text-[var(--text-muted)]">
-          A real interactive panel — pick a query and watch the response come back. Real data, not mocked.
-        </p>
+        <div className="mt-2 flex flex-wrap items-end justify-between gap-x-6 gap-y-1">
+          <h2 className="text-4xl font-bold text-[var(--text)] sm:text-5xl">
+            Try the{' '}
+            <span className="bg-gradient-to-r from-[var(--accent-from)] to-[var(--accent-to)] bg-clip-text text-transparent italic">
+              backend
+            </span>
+            .
+          </h2>
+          <p className="max-w-md pb-1 text-[var(--text-muted)]">
+            A real interactive panel — pick a query and watch the response come back. Real data, not mocked.
+          </p>
+        </div>
 
         <div className="mt-10 grid grid-cols-1 overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--bg)] text-left lg:grid-cols-[minmax(0,260px)_1fr]">
           {/* Sample queries */}

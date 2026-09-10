@@ -34,9 +34,13 @@ function renderNav() {
     <div id="skills"></div>
     <div id="projects"></div>
     <div id="experience"></div>
+    <div id="live-demo"></div>
+    <div id="memory-log"></div>
     <div id="contact"></div>
   `
-  ;['home', 'about', 'skills', 'projects', 'experience'].forEach((id) => setSectionTop(id, 900))
+  ;['home', 'about', 'skills', 'projects', 'experience', 'live-demo', 'memory-log'].forEach((id) =>
+    setSectionTop(id, 900),
+  )
   setSectionTop('home', -900)
   const container = document.createElement('div')
   document.body.appendChild(container)
@@ -63,6 +67,11 @@ describe('Nav', () => {
     expect(
       screen.getByRole('button', {
         name: 'About',
+      }),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', {
+        name: 'Experience',
       }),
     ).toBeInTheDocument()
     expect(
@@ -155,6 +164,40 @@ describe('Nav', () => {
       expect(experienceButton).toHaveAttribute('aria-current', 'true')
     })
     expect(projectsButton).not.toHaveAttribute('aria-current')
+  })
+  it('morphs the last nav slot through the off-menu tail sections', async () => {
+    renderNav()
+    // Defaults to "Experience" before you scroll into that stretch.
+    expect(screen.getByRole('button', { name: 'Experience' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Live Demo' })).not.toBeInTheDocument()
+
+    setSectionTop('experience', -2000)
+    setSectionTop('live-demo', 50)
+    fireScroll()
+    await waitFor(() => {
+      const tail = screen.getByRole('button', { name: 'Live Demo' })
+      expect(tail).toHaveAttribute('aria-current', 'true')
+    })
+    expect(screen.queryByRole('button', { name: 'Experience' })).not.toBeInTheDocument()
+
+    setSectionTop('live-demo', -2000)
+    setSectionTop('memory-log', 50)
+    fireScroll()
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'Memory Log' })).toHaveAttribute('aria-current', 'true')
+    })
+  })
+  it('scrolls to whichever tail section the last slot currently shows', async () => {
+    const user = userEvent.setup()
+    renderNav()
+    setSectionTop('experience', -2000)
+    setSectionTop('live-demo', 50)
+    fireScroll()
+    const tail = await screen.findByRole('button', { name: 'Live Demo' })
+    const scrollSpy = vi.fn()
+    document.getElementById('live-demo').scrollIntoView = scrollSpy
+    await user.click(tail)
+    expect(scrollSpy).toHaveBeenCalledWith({ behavior: 'smooth' })
   })
   it('renders exactly one sliding active-dot, on the active link', async () => {
     renderNav()

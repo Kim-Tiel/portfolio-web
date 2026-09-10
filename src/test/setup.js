@@ -27,6 +27,22 @@ window.matchMedia ??= (query) => ({
   dispatchEvent: () => false,
 })
 
+// jsdom 30 on newer Node builds no longer ships a Web Storage implementation,
+// so window.localStorage can be undefined. Provide a minimal in-memory shim.
+if (!window.localStorage) {
+  const store = new Map()
+  window.localStorage = {
+    getItem: (k) => (store.has(k) ? store.get(k) : null),
+    setItem: (k, v) => store.set(String(k), String(v)),
+    removeItem: (k) => store.delete(k),
+    clear: () => store.clear(),
+    key: (i) => [...store.keys()][i] ?? null,
+    get length() {
+      return store.size
+    },
+  }
+}
+
 // Theme preference is persisted to localStorage — reset it between tests
 // so one test's toggle doesn't leak into the next.
 afterEach(() => window.localStorage.clear())
