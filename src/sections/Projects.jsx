@@ -31,30 +31,6 @@ const HEADER_VARIANTS = {
     },
   },
 }
-// Cards fade/lift in one after another (not all at once) — both the
-// first time the grid scrolls into view and every time the filter
-// changes (the grid remounts via `key`, replaying this from scratch) —
-// same treatment as the Skills category tabs.
-//
-// This grid gets its OWN `whileInView` trigger below (rather than
-// inheriting "show" from SECTION_VARIANTS above) on purpose: `projects`
-// loads asynchronously, so on a hard refresh the cards can still be an
-// empty array — and therefore not exist in the DOM yet — at the exact
-// moment the section first scrolls into view. Framer Motion only
-// pushes an inherited variant to the children present *at that moment*;
-// cards that mount later, once the real data arrives, never got that
-// push and stayed permanently stuck at `hidden`. Giving the grid its
-// own observer means it checks visibility whenever it actually mounts
-// with real cards, not whenever some ancestor happened to.
-const GRID_VARIANTS = {
-  hidden: {},
-  show: {
-    transition: {
-      delayChildren: 0.15,
-      staggerChildren: 0.08,
-    },
-  },
-}
 const CARD_VARIANTS = {
   hidden: {
     opacity: 0,
@@ -162,24 +138,19 @@ export function Projects({ projects }) {
           )}
         </motion.div>
 
-        <motion.div
-          // Remounts (and re-plays the staggered entrance below) each time
-          // the filter changes, since `key` changes with `activeFilter`.
-          // Own independent whileInView trigger — see the comment on
-          // GRID_VARIANTS above for why this can't just inherit "show"
-          // from the section around it.
+        <div
           key={activeFilter}
-          variants={GRID_VARIANTS}
-          initial="hidden"
-          whileInView="show"
-          viewport={{
-            once: true,
-            amount: 0.2,
-          }}
           className="mt-10 grid grid-cols-1 gap-6 text-left sm:grid-cols-2 lg:grid-cols-3"
         >
           {visibleProjects.map((project, index) => (
-            <motion.div key={project.id} variants={CARD_VARIANTS} className="group relative">
+            <motion.div
+              key={project.id}
+              variants={CARD_VARIANTS}
+              initial="hidden"
+              whileInView="show"
+              viewport={{ once: true, amount: 0.15 }}
+              className="group relative"
+            >
               {/* Sits behind the card, offset down-right — revealed on
                   hover, matching the same offset-outline treatment used
                   on the About section's photo card. */}
@@ -295,7 +266,7 @@ export function Projects({ projects }) {
               </div>
             </motion.div>
           ))}
-        </motion.div>
+        </div>
 
         {filteredProjects.length === 0 && (
           <p className="mt-10 text-[var(--text-muted)]">
